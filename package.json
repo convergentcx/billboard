@@ -1,5 +1,5 @@
 {
-  "name": "sign",
+  "name": "@convergent/sign",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -21,5 +21,17 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "index.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "github.com/convergentcx/sign"
+  },
+  "keywords": [
+    "ethereum"
+  ],
+  "author": "convergent",
+  "license": "GPL-3.0"
 }
