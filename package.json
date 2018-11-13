@@ -1,5 +1,5 @@
 {
-  "name": "@convergent/sign",
+  "name": "@convergent/billboard",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -22,12 +22,14 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "description": "",
   "main": "index.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "@convergent/arc": "0.0.2"
+  },
   "repository": {
     "type": "git",
-    "url": "github.com/convergentcx/sign"
+    "url": "github.com/convergentcx/billboard"
   },
   "keywords": [
     "ethereum"
