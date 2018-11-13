@@ -821,7 +821,7 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@convergent/arc@^0.0.2":
+"@convergent/arc@0.0.2":
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/@convergent/arc/-/arc-0.0.2.tgz#b66ff4674d25cfab119c0193a9355c7c9ea5b2d9"
   integrity sha512-HL0xUI4eSFBiOoQFgoVzbzyQD7xlIIlrd29AR9m9uueltKHld8q79eULGZDobob6IiAI/u0z2KTqIwa2m2e6Ww==
@@ -8669,6 +8669,17 @@ solc@0.4.24:
     semver "^5.3.0"
     yargs "^4.7.1"
 
+solc@0.4.25:
+  version "0.4.25"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.25.tgz#06b8321f7112d95b4b903639b1138a4d292f5faa"
+  integrity sha512-jU1YygRVy6zatgXrLY2rRm7HW1d7a8CkkEgNJwvH2VLpWhMFsMdWcJn6kUqZwcSz/Vm+w89dy7Z/aB5p6AFTrg==
+  dependencies:
+    fs-extra "^0.30.0"
+    memorystream "^0.3.1"
+    require-from-string "^1.1.0"
+    semver "^5.3.0"
+    yargs "^4.7.1"
+
 source-list-map@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/source-list-map/-/source-list-map-2.0.1.tgz#3993bd873bfc48479cca9ea3a547835c7c154b34"
@@ -9221,6 +9232,15 @@ truffle@5.0.0-next.12:
     mocha "^4.1.0"
     original-require "1.0.1"
     solc "0.4.24"
+
+truffle@^5.0.0-next.15:
+  version "5.0.0-next.15"
+  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.0-next.15.tgz#70585225a71f08b89b3735a9f542aad25b6d2c78"
+  integrity sha512-ybITmAcGq7vxcz7NrY/E0mFxJhkb5MBMhm4PmsdIG6y43fSFFvR5O4ldCvLBZH6e4fqhwJp0yhec6kSHp+9Hbw==
+  dependencies:
+    mocha "^4.1.0"
+    original-require "1.0.1"
+    solc "0.4.25"
 
 tryer@^1.0.0:
   version "1.0.1"
