@@ -14,7 +14,6 @@ import {
 import * as d3 from 'd3';
 
 export default class Chart extends Component {
-
   constructor(props) {
     super(props);
     this.ref = React.createRef();
@@ -77,14 +76,15 @@ export default class Chart extends Component {
           <YAxis dataKey="value" type={ 'number' }>
             {/* <Label value="Token Price" position="insideTopLeft" style={{ textAnchor: 'right' }} angle={270} dy={100} offset={-20} /> */}
           </YAxis>
-          <Tooltip/>
+          <Tooltip />
           <Area isAnimationActive={false} dots={false} stackOffset={'none'} dataKey="value" name={'price'} key={'price'} stroke='#0095b3' fill='none'/>
           <Area
             isAnimationActive={false}
             stackOffset={'none'} 
             dataKey="sell" 
             stroke="#0095b3"
-            fill='url(#rainbow)'
+            fill='green'
+            // fill='url(#rainbow)'
           />
           <ReferenceDot
             isFront={true}

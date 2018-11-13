@@ -8,7 +8,7 @@ const mockCurveData = {
   currentPrice: 10,
   exponent: 1,
   inverseSlope: 1000,
-  poolBalance: 23,
+  poolBalance: 230,
   totalSupply: 10000,
 };
 
@@ -24,7 +24,6 @@ export default class App extends Component {
             width="100%"
             margin={{ top: 10, bottom: 10, left: 0, right: 50 }}
           />
-
           <a
             className="App-link"
             href="#"
