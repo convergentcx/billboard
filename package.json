@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^3.5.1",
     "react": "^16.6.1",
     "react-dom": "^16.6.1",
     "react-scripts": "2.1.1",
@@ -16,7 +17,7 @@
     "eject": "react-scripts eject",
     "ganache": "ganache-cli -p 8777 -i 23 --account=$PK,100000000000000000000",
     "truffle:compile": "truffle compile",
-    "truffle:deploy:dev": "truffle deploy --network development",
+    "truffle:deploy:dev": "truffle deploy --network development --reset",
     "truffle:build:copy": "cp build src/ -r",
     "truffle:test": "truffle test"
   },
