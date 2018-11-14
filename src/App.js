@@ -100,6 +100,7 @@ class App extends Component {
             <Button color="primary" variant="outlined" onClick={this.handleBuy}>
               Buy
             </Button>
+            &nbsp;&nbsp;
             <Button color="secondary" variant="outlined" onClick={this.handleSell}>
               Sell
             </Button>
