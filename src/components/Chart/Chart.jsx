@@ -31,13 +31,14 @@ export default class Chart extends Component {
     
     context.append("svg:pattern")
     .attr("id", "rainbow")
-    .attr("width", 450)
-    .attr("height", 450)
+    .attr("width", 200)
+    .attr("height", 200)
     .attr("patternUnits", "userSpaceOnUse")
     .append("svg:image")
-    .attr("xlink:href", 'https://media.giphy.com/media/JQXdEMRPz9sUU/giphy.gif')
-    .attr("width", 450)
-    .attr("height", 450)
+    .attr("xlink:href", 'https://hack.longhash.com/static/media/aboutpic@2x.b02d4782.png')
+    // .attr("xlink:href", 'https://media.giphy.com/media/26AHG5KGFxSkUWw1i/giphy.gif')
+    .attr("width", 200)
+    .attr("height", 200)
     .attr("x", 0)
     .attr("y", 0);
   }
@@ -93,11 +94,11 @@ export default class Chart extends Component {
           style={{ margin: 'auto' }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="supply" type={ 'number' } domain={[0, 6]} allowDataOverflow>
+          <XAxis dataKey="supply" type={ 'number' } domain={[0, 9]} allowDataOverflow>
             {/* <Label value="Token Supply" position = "bottom" dy={0}/> */}
           </XAxis>
-          <YAxis dataKey="value" type={ 'number' } domain={[0, 0.01]} allowDataOverflow>
             {/* <Label value="Token Price" position="insideTopLeft" style={{ textAnchor: 'right' }} angle={270} dy={100} offset={-20} /> */}
+          <YAxis dataKey="value" type={ 'number' } domain={[0, 0.008]} allowDataOverflow>
           </YAxis>
           <Tooltip />
           <Area isAnimationActive={false} dots={false} stackOffset={'none'} dataKey="value" name={'price'} key={'price'} stroke='#0095b3' fill='none'/>
@@ -106,8 +107,8 @@ export default class Chart extends Component {
             stackOffset={'none'} 
             dataKey="sell" 
             stroke="#0095b3"
-            fill='green'
-            // fill='url(#rainbow)'
+            // fill='blue'
+            fill='url(#rainbow)'
           />
           <ReferenceDot
             isFront={true}
