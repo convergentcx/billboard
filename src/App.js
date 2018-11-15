@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
 import {
   Button,
+  Modal,
+  Paper,
   Tooltip,
+  Typography,
  } from '@material-ui/core';
 
 import Chart from './components/Chart/Chart';
@@ -18,17 +21,30 @@ const mockCurveData = {
   totalSupply: 10000,
 };
 
+const modalStyle = {
+  position: 'absolute',
+  top: 0,
+  bottom: 0,
+  left: '60%',
+  right: 0,
+  // right: '25%',
+  // transform: `translate(25%, 25%)`
+}
+
 class App extends Component {
   constructor(props, context) {
     super(props);
     this.handleBuy = this.handleBuy.bind(this);
     this.handleSell = this.handleSell.bind(this);
+    this.openModal = this.openModal.bind(this);
+    this.closeModal = this.closeModal.bind(this);
     this.state = {
       addr: 'hello_world',
       billboard: {},
       billboardAddress: 'unavailable',
-      keys: mockCurveData,
       currentPrice: 0,
+      keys: mockCurveData,
+      modalOpen: false,
     }
   }
 
@@ -47,10 +63,9 @@ class App extends Component {
       inverseSlope: await billboard.methods.inverseSlope().call(),
       poolBalance: await billboard.methods.poolBalance().call(),
       totalSupply: await billboard.methods.totalSupply().call(),
-    }
-    const currentPrice = (1 / curveData.inverseSlope) * (curveData.totalSupply) ** curveData.exponent;
+    };
 
-    // Object.assign(curveData, { currentPrice });
+    const currentPrice = (1 / curveData.inverseSlope) * (curveData.totalSupply) ** curveData.exponent;
 
     this.setState({
       addr: me,
@@ -66,9 +81,9 @@ class App extends Component {
     })
   }
 
-  componentDidUpdate() {
-    console.log('update');
-  }
+  // componentDidUpdate() {
+  //   console.log('update');
+  // }
 
   async handleBuy() {
     this.state.billboard.methods.mint(String(10**18)).send({
@@ -80,6 +95,18 @@ class App extends Component {
   async handleSell() {
     this.state.billboard.methods.burn(String(10**18)).send({
       from: this.state.addr,
+    });
+  }
+
+  openModal() {
+    this.setState({
+      modalOpen: true,
+    });
+  }
+
+  closeModal() {
+    this.setState({
+      modalOpen: false,
     });
   }
 
@@ -110,7 +137,7 @@ class App extends Component {
             }
             height="100%"
             width="100%"
-            margin={{ top: 10, bottom: 10, left: 0, right: 50 }}
+            margin={{ top: 10, bottom: 10, left: 40, right: 40 }}
           />
           {/* <a
             className="App-link"
@@ -121,13 +148,29 @@ class App extends Component {
             Buy This Sign
           </a> */}
           <div>
-            <Button color="primary" variant="outlined" onClick={this.handleBuy}>
-              Buy
-            </Button>
-            &nbsp;&nbsp;
-            <Button color="secondary" variant="outlined" onClick={this.handleSell}>
-              Sell
-            </Button>
+            <Button color="primary" variant="outlined" onClick={this.openModal}>Buy This Sign</Button>
+            <Modal
+              aria-labelledby="simple-modal-title"
+              aria-describedby="simple-modal-description"
+              open={this.state.modalOpen}
+              onClose={this.closeModal}
+            >
+              <Paper style={modalStyle} elevation={1}>
+                <Typography variant="h6" id="modal-title">
+                  Buy the Convergent Billboard
+                </Typography>
+                <Button color="primary" variant="outlined" onClick={this.handleBuy}>
+                  Buy
+                </Button>
+                &nbsp;&nbsp;
+                <Button color="secondary" variant="outlined" onClick={this.handleSell}>
+                  Sell
+                </Button>
+                {/* <Typography variant="subtitle1" id="simple-modal-description">
+                  Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+                </Typography> */}
+              </Paper>
+            </Modal>
           </div>
         </header>
       </div>
