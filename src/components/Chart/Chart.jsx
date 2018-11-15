@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {
   Area,
   CartesianGrid,
-  ComposedChart,
+  AreaChart,
   Label,
   ReferenceDot,
   ResponsiveContainer,
@@ -12,6 +12,13 @@ import {
 } from 'recharts';
 
 import * as d3 from 'd3';
+
+import {
+  addDecimals,
+  removeDecimals,
+} from '../../utils';
+
+import { utils } from 'web3';
 
 export default class Chart extends Component {
   constructor(props) {
@@ -36,44 +43,60 @@ export default class Chart extends Component {
   }
   
   getChartData() {
-    let { totalSupply, poolBalance, inverseSlope, exponent, currentPrice } = this.props.curveData;
-    poolBalance = parseFloat(poolBalance) || 0;
-    totalSupply = parseFloat(totalSupply) || 0;
+    let { 
+      currentPrice,
+      exponent,
+      inverseSlope,
+      poolBalance,
+      totalSupply,
+    } = this.props.curveData;
 
-    let currentPoint = { supply: totalSupply, value: currentPrice };
+    poolBalance = utils.toBN(poolBalance);
+    totalSupply = utils.toBN(totalSupply);
 
-    let data = [];
-    let step = (totalSupply || 50) / 100;
+    const currentPoint = {
+      X: removeDecimals(totalSupply.toString()),
+      y: removeDecimals(currentPrice.toString()),
+    };
 
-    for (let i = step; i < (totalSupply || 50) * 1.5; i += step) {
-      let price = 1 / inverseSlope * (i ** exponent);
-      if (i < totalSupply) {
-        data.push({ supply: i, sell: price.toFixed(4), value: parseFloat(price.toFixed(4)) });
-      } else if (i >= totalSupply) {
-        data.push({ supply: i, buy: price.toFixed(4), value: parseFloat(price.toFixed(4)) });
+    let data = [
+      {supply: 0, sell: 0, value: 0}
+    ];
+
+    const step = utils.toBN(10**18);
+    for (let i = step; i.lte(utils.toBN(500).mul(step)); i = i.add(step)) {
+      const price = utils.toBN(1 / inverseSlope * (i ** exponent));
+      if (i.lt(totalSupply)) {
+        data.push({ supply: parseFloat(removeDecimals(i)).toFixed(4), sell: parseFloat(removeDecimals(price)).toFixed(4), value: parseFloat(removeDecimals(price)).toFixed(4) });
+      } else if (i.gte(totalSupply)) {
+        data.push({ supply: parseFloat(removeDecimals(i)).toFixed(4), buy: parseFloat(removeDecimals(price)).toFixed(4), value: parseFloat(removeDecimals(price)).toFixed(4) });
       }
     }
-    return { data, currentPoint };
+
+    return {
+      data, 
+      currentPoint,
+    };
   }
 
   render () {
     let { data, currentPoint } = this.getChartData();
 
     const { height, width } = this.props;
-
+    console.log(data)
     return (
       <div style={{ height: "70vh", width: "90vw"}}>
       <ResponsiveContainer height={height} width={width}>
-        <ComposedChart
+        <AreaChart
           data={data}
           margin={this.props.margin}
           style={{ margin: 'auto' }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="supply" type={ 'number' }>
-            {/* <Label value="Token Supply" position = "insideBottomRight" dy={20}/> */}
+          <XAxis dataKey="supply" type={ 'number' } domain={[0, 6]} allowDataOverflow>
+            {/* <Label value="Token Supply" position = "bottom" dy={0}/> */}
           </XAxis>
-          <YAxis dataKey="value" type={ 'number' }>
+          <YAxis dataKey="value" type={ 'number' } domain={[0, 0.01]} allowDataOverflow>
             {/* <Label value="Token Price" position="insideTopLeft" style={{ textAnchor: 'right' }} angle={270} dy={100} offset={-20} /> */}
           </YAxis>
           <Tooltip />
@@ -89,16 +112,16 @@ export default class Chart extends Component {
           <ReferenceDot
             isFront={true}
             ifOverflow="extendDomain"
-            x={currentPoint.supply}
-            y={currentPoint.value}
+            x={currentPoint.x}
+            y={currentPoint.y}
             r={4}
             stroke="#0095b3"
           >
-            <Label value={currentPoint.value.toFixed(2)}
+            <Label value={currentPoint.y}
               position="top"
             />
           </ReferenceDot>
-        </ComposedChart>
+        </AreaChart>
       </ResponsiveContainer>
       <svg ref={(ref) => this.ref = ref} />
       </div>
