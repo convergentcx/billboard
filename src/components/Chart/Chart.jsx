@@ -14,7 +14,7 @@ import {
 import * as d3 from 'd3';
 
 import {
-  addDecimals,
+  getPrice,
   removeDecimals,
 } from '../../utils';
 
@@ -35,8 +35,8 @@ export default class Chart extends Component {
     .attr("height", 200)
     .attr("patternUnits", "userSpaceOnUse")
     .append("svg:image")
-    .attr("xlink:href", 'https://hack.longhash.com/static/media/aboutpic@2x.b02d4782.png')
-    // .attr("xlink:href", 'https://media.giphy.com/media/26AHG5KGFxSkUWw1i/giphy.gif')
+    // .attr("xlink:href", 'https://hack.longhash.com/static/media/aboutpic@2x.b02d4782.png')
+    .attr("xlink:href", 'https://media.giphy.com/media/26AHG5KGFxSkUWw1i/giphy.gif')
     .attr("width", 200)
     .attr("height", 200)
     .attr("x", 0)
@@ -56,9 +56,11 @@ export default class Chart extends Component {
     totalSupply = utils.toBN(totalSupply);
 
     const currentPoint = {
-      X: removeDecimals(totalSupply.toString()),
-      y: removeDecimals(currentPrice.toString()),
+      x: parseFloat(removeDecimals(totalSupply.toString())).toFixed(4),
+      y: parseFloat(removeDecimals(currentPrice.toString())).toFixed(4),
     };
+
+    console.log(currentPoint)
 
     let data = [
       {supply: 0, sell: 0, value: 0}
@@ -67,9 +69,9 @@ export default class Chart extends Component {
     const step = utils.toBN(10**18);
     for (let i = step; i.lte(utils.toBN(500).mul(step)); i = i.add(step)) {
       const price = utils.toBN(1 / inverseSlope * (i ** exponent));
-      if (i.lt(totalSupply)) {
+      if (i.lte(totalSupply)) {
         data.push({ supply: parseFloat(removeDecimals(i)).toFixed(4), sell: parseFloat(removeDecimals(price)).toFixed(4), value: parseFloat(removeDecimals(price)).toFixed(4) });
-      } else if (i.gte(totalSupply)) {
+      } else if (i.gt(totalSupply)) {
         data.push({ supply: parseFloat(removeDecimals(i)).toFixed(4), buy: parseFloat(removeDecimals(price)).toFixed(4), value: parseFloat(removeDecimals(price)).toFixed(4) });
       }
     }
