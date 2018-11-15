@@ -19,7 +19,7 @@ const mockCurveData = {
 };
 
 class App extends Component {
-  constructor(props) {
+  constructor(props, context) {
     super(props);
     this.handleBuy = this.handleBuy.bind(this);
     this.handleSell = this.handleSell.bind(this);
@@ -27,19 +27,21 @@ class App extends Component {
       addr: 'hello_world',
       billboard: {},
       billboardAddress: 'unavailable',
-      curveData: mockCurveData,
+      keys: mockCurveData,
+      currentPrice: 0,
     }
   }
 
   async componentDidMount() {
-    const { contracts, store, web3 } = this.props.drizzle;
+    const { contracts, web3 } = this.props.drizzle;
     const { Convergent_Billboard: billboard } = contracts;
     const me = (await web3.eth.getAccounts())[0];
 
-    // const state = store.getState();
-    // const exponentKey = billboard.methods.exponent.cacheCall();
+    const exponentKey = billboard.methods.exponent.cacheCall();
+    const inverseSlopeKey = billboard.methods.inverseSlope.cacheCall();
+    const poolBalanceKey = billboard.methods.poolBalance.cacheCall();
+    const totalSupplyKey = billboard.methods.totalSupply.cacheCall();
 
-    // console.log(state.contracts.Convergent_Billboard)
     const curveData = {
       exponent: await billboard.methods.exponent().call(),
       inverseSlope: await billboard.methods.inverseSlope().call(),
@@ -48,18 +50,24 @@ class App extends Component {
     }
     const currentPrice = (1 / curveData.inverseSlope) * (curveData.totalSupply) ** curveData.exponent;
 
-    Object.assign(curveData, { currentPrice });
+    // Object.assign(curveData, { currentPrice });
 
     this.setState({
       addr: me,
       billboard,
       billboardAddress: billboard.address,
-      curveData
+      keys: {
+        exponentKey,
+        inverseSlopeKey,
+        poolBalanceKey,
+        totalSupplyKey,
+      }, 
+      currentPrice,
     })
   }
 
   componentDidUpdate() {
-    console.log(this.state.curveData);
+    console.log('update');
   }
 
   async handleBuy() {
@@ -76,6 +84,14 @@ class App extends Component {
   }
 
   render() {
+    const { Convergent_Billboard: billboard } = this.props.drizzleState.contracts;
+
+    if (
+      !(this.state.keys.totalSupplyKey in billboard.totalSupply)
+      || !(this.state.keys.exponentKey in billboard.exponent)) {
+      return <span>Still loading...</span>
+    }
+
     return (
       <div className="App">
         <header className="App-header">
@@ -83,7 +99,15 @@ class App extends Component {
           <h1>Convergent Billboard</h1>
         </Tooltip>
           <Chart
-            curveData={this.state.curveData}
+            curveData={
+              {
+                currentPrice: this.state.currentPrice,
+                exponent: billboard.exponent[this.state.keys.exponentKey].value,
+                inverseSlope: billboard.inverseSlope[this.state.keys.inverseSlopeKey].value,
+                poolBalance: billboard.poolBalance[this.state.keys.poolBalanceKey].value,
+                totalSupply: billboard.totalSupply[this.state.keys.totalSupplyKey].value,
+              }
+            }
             height="100%"
             width="100%"
             margin={{ top: 10, bottom: 10, left: 0, right: 50 }}

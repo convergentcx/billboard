@@ -93,7 +93,7 @@ export default class Chart extends Component {
           style={{ margin: 'auto' }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="supply" type={ 'number' } domain={[0, 5]} allowDataOverflow>
+          <XAxis dataKey="supply" type={ 'number' } domain={[0, 6]} allowDataOverflow>
             {/* <Label value="Token Supply" position = "bottom" dy={0}/> */}
           </XAxis>
           <YAxis dataKey="value" type={ 'number' } domain={[0, 0.01]} allowDataOverflow>
