@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import {
   Button,
   Drawer,
+  FormControl,
+  FormHelperText,
   Input,
+  InputAdornment,
   Menu,
   MenuItem,
   Paper,
@@ -90,11 +93,38 @@ class App extends Component {
     })
   }
 
+  // Only allow up to four decimals places on input.
+  validateInput(amount) {
+    const zeroes = [
+      '0',
+      '00',
+      '000',
+      '0000',
+    ]
+
+    const split = amount.split('.');
+    if (split[1].length && zeroes.indexOf(split[1]) !== -1) {
+      // Right hand side of decimals is all zero.
+      return { value: split[0], decimals: 0 };
+    } else if (split[1].length) {
+      const decimals = split[1].length;
+      const value = split[0] * 10**decimals + Number(split[1]);
+      return { value, decimals }
+    } else {
+      return 'invalid';
+    }
+  }
+
   async handleBuy() {
-    this.state.billboard.methods.mint(String(10**18)).send({
+    const validated = this.validateInput(this.state.buyAmt);
+    const amount = utils.toBN(validated.value).mul(utils.toBN(10**18)).div(utils.toBN(10**validated.decimals));
+    this.state.billboard.methods.mint(amount.toString()).send({
       from: this.state.addr,
-      value: await this.state.billboard.methods.priceToMint(String(10**18)).call(),
+      value: await this.state.billboard.methods.priceToMint(amount.toString()).call(),
     });
+    this.setState({
+      buyAmt: '',
+    })
   }
 
   handleChange = name => event => {
@@ -104,9 +134,14 @@ class App extends Component {
   }
 
   async handleSell() {
-    this.state.billboard.methods.burn(String(10**18)).send({
+    const validated = this.validateInput(this.state.sellAmt)
+    const amount = utils.toBN(validated.value).mul(utils.toBN(10**18)).div(utils.toBN(10**validated.decimals));
+    this.state.billboard.methods.burn(amount.toString()).send({
       from: this.state.addr,
     });
+    this.setState({
+      sellAmt: '',
+    })
   }
 
   openMenu(event) {
@@ -208,47 +243,57 @@ class App extends Component {
                 <Typography variant="h6" id="modal-title">
                   CONVERGENT BILLBOARD
                 </Typography>
-                <TextField
-                  id="standard-name"
-                  label="Buy Amount"
-                  // className={classes.textField}
-                  value={this.state.buyAmt}
-                  onChange={this.handleChange('buyAmt')}
-                  margin="normal"
-                />
+                <FormControl
+                  aria-describedby="weight-helper-text"
+                >
+                  <Input
+                    id="adornment-weight"
+                    value={this.state.buyAmt}
+                    onChange={this.handleChange('buyAmt')}
+                    endAdornment={<InputAdornment position="end">CBT</InputAdornment>}
+                    inputProps={{
+                      'aria-label': 'Weight',
+                    }}
+                  />
+                  <FormHelperText id="weight-helper-text">Amount</FormHelperText>
+                </FormControl>
                 <Button color="primary" variant="outlined" onClick={this.handleBuy}>
                   Buy
                 </Button>
                 &nbsp;&nbsp;
-                <TextField
-                  id="standard-name"
-                  label="Sell Amount"
-                  // className={classes.textField}
-                  value={this.state.sellAmt}
-                  onChange={this.handleChange('sellAmt')}
-                  margin="normal"
-                />
+                <FormControl
+                  aria-describedby="weight-helper-text"
+                >
+                  <Input
+                    id="adornment-weight"
+                    value={this.state.sellAmt}
+                    onChange={this.handleChange('sellAmt')}
+                    endAdornment={<InputAdornment position="end">CBT</InputAdornment>}
+                    inputProps={{
+                      'aria-label': 'Weight',
+                    }}
+                  />
+                  <FormHelperText id="weight-helper-text">Amount</FormHelperText>
+                </FormControl>
                 <Button color="secondary" variant="outlined" onClick={this.handleSell}>
                   Sell
                 </Button>
-                <Typography variant="subtitle1" id="simple-modal-description">
-                  Upload an image and pay one token.
-                </Typography>
-
+                
+                <br />
                 <Table>
                   <TableHead>
                     <TableRow>
                       <TableCell numeric>Current Price</TableCell>
                       <TableCell numeric>Reserve Balance</TableCell>
                       <TableCell numeric>Total Supply</TableCell>
-                      <TableCell numeric>BILL Tokens Used</TableCell>
+                      <TableCell numeric>CBT Used</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     <TableRow key={1}>
                       <TableCell numeric>{removeDecimals(curveData.currentPrice.toString())} Ξ</TableCell>
                       <TableCell numeric>{removeDecimals(billboard.poolBalance[this.state.keys.poolBalanceKey].value)} Ξ</TableCell>
-                      <TableCell numeric>{removeDecimals(billboard.totalSupply[this.state.keys.totalSupplyKey].value)} BILLs</TableCell>
+                      <TableCell numeric>{removeDecimals(billboard.totalSupply[this.state.keys.totalSupplyKey].value)} CBT</TableCell>
                       <TableCell numeric>{0}</TableCell>
                     </TableRow>
                   </TableBody>

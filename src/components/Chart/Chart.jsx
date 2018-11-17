@@ -60,15 +60,13 @@ export default class Chart extends Component {
       y: parseFloat(removeDecimals(currentPrice.toString())).toFixed(4),
     };
 
-    console.log(currentPoint)
-
     let data = [
       {supply: 0, sell: 0, value: 0}
     ];
 
-    const step = utils.toBN(10**18);
+    const step = utils.toBN(10**17);
     for (let i = step; i.lte(utils.toBN(500).mul(step)); i = i.add(step)) {
-      const price = utils.toBN(1 / inverseSlope * (i ** exponent));
+      const price = getPrice(inverseSlope, i, exponent);
       if (i.lte(totalSupply)) {
         data.push({ supply: parseFloat(removeDecimals(i)).toFixed(4), sell: parseFloat(removeDecimals(price)).toFixed(4), value: parseFloat(removeDecimals(price)).toFixed(4) });
       } else if (i.gt(totalSupply)) {
@@ -83,16 +81,16 @@ export default class Chart extends Component {
   }
 
   render () {
-    let { data, currentPoint } = this.getChartData();
+    const { height, margin, width } = this.props;
 
-    const { height, width } = this.props;
-    console.log(data)
+    const { data, currentPoint } = this.getChartData();
+
     return (
       <div style={{ height: "70vh", width: "90vw"}}>
       <ResponsiveContainer height={height} width={width}>
         <AreaChart
           data={data}
-          margin={this.props.margin}
+          margin={margin}
           style={{ margin: 'auto' }}
         >
           <CartesianGrid strokeDasharray="3 3" />
@@ -118,10 +116,12 @@ export default class Chart extends Component {
             x={currentPoint.x}
             y={currentPoint.y}
             r={4}
-            stroke="#0095b3"
+            fill="blue"
+            stroke="green"
           >
             <Label value={currentPoint.y}
               position="top"
+              fill="white"
             />
           </ReferenceDot>
         </AreaChart>
