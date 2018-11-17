@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import {
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
   Drawer,
   FormControl,
   FormHelperText,
@@ -14,7 +19,6 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  TextField,
   Tooltip,
   Typography,
  } from '@material-ui/core';
@@ -46,12 +50,14 @@ class App extends Component {
     this.handleSell = this.handleSell.bind(this);
     this.openMenu = this.openMenu.bind(this);
     this.closeMenu = this.closeMenu.bind(this);
+    // this.toggleDialog = this.toggleDialog.bind(this);
     this.state = {
       addr: 'hello_world',
       anchorEl: null,
       billboard: {},
       billboardAddress: 'unavailable',
       buyAmt: '',
+      dialog: false,
       sellAmt: '',
       currentPrice: 0,
       keys: mockCurveData,
@@ -156,6 +162,12 @@ class App extends Component {
     })
   }
 
+  toggleDialog = (open) => () =>  {
+    this.setState({
+      dialog: open,
+    })
+  }
+
   toggleDrawer = (side, open) => () => {
     this.setState({
       [side]: open,
@@ -212,7 +224,7 @@ class App extends Component {
               aria-label="More"
               aria-owns={open ? 'long-menu' : undefined}
               aria-haspopup="true"
-              onClick={this.openMenu}
+              onClick={this.toggleDialog(true)}
               color="primary"
               variant="outlined"
             >
@@ -220,6 +232,29 @@ class App extends Component {
             </Button>
 
           </div>
+
+          <Dialog
+            open={this.state.dialog}
+            onClose={this.toggleDialog(false)}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                Let Google help apps determine location. This means sending anonymous location data to
+                Google, even when no apps are running.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={this.toggleDialog(false)} color="primary">
+                Disagree
+              </Button>
+              <Button onClick={this.toggleDialog(false)} color="primary" autoFocus>
+                Agree
+              </Button>
+            </DialogActions>
+          </Dialog>
 
           <Menu
             id="simple-menu"
