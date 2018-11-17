@@ -6,8 +6,8 @@ import "@convergent/arc/contracts/EthPolynomialCurvedToken.sol";
 contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
     using SafeMath for uint256;
 
-    uint256 cashed; // Amount of tokens that have been "cashed out."
-    uint256 requiredAmt = 1 * 10**18; // One token per banner change.
+    uint256 public cashed; // Amount of tokens that have been "cashed out."
+    uint256  public requiredAmt = 1 * 10**18; // One token per banner change.
 
     event Advertisement(bytes32 what, uint256 indexed when);
 

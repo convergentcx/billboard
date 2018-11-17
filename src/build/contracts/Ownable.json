@@ -2560,7 +2560,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.0-beta.1",
-  "updatedAt": "2018-11-13T19:31:00.691Z",
+  "updatedAt": "2018-11-17T16:00:09.340Z",
   "devdoc": {
     "methods": {
       "isOwner()": {

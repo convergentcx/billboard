@@ -11,8 +11,8 @@ import {
   FormHelperText,
   Input,
   InputAdornment,
-  Menu,
-  MenuItem,
+  // Menu,
+  // MenuItem,
   Paper,
   Table,
   TableBody,
@@ -21,7 +21,9 @@ import {
   TableRow,
   Tooltip,
   Typography,
- } from '@material-ui/core';
+} from '@material-ui/core';
+
+import Dropzone from 'react-dropzone'; 
 
 import Chart from './components/Chart/Chart';
 
@@ -43,6 +45,37 @@ const mockCurveData = {
   totalSupply: 10000,
 };
 
+const thumbsContainer = {
+  display: 'flex',
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  marginTop: 16
+};
+
+const thumb = {
+  display: 'inline-flex',
+  borderRadius: 2,
+  border: '1px solid #eaeaea',
+  marginBottom: 8,
+  marginRight: 8,
+  width: 100,
+  height: 100,
+  padding: 4,
+  boxSizing: 'border-box'
+};
+
+const thumbInner = {
+  display: 'flex',
+  minWidth: 0,
+  overflow: 'hidden'
+};
+
+const img = {
+  display: 'block',
+  width: 'auto',
+  height: '100%'
+};
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -50,18 +83,20 @@ class App extends Component {
     this.handleSell = this.handleSell.bind(this);
     this.openMenu = this.openMenu.bind(this);
     this.closeMenu = this.closeMenu.bind(this);
-    // this.toggleDialog = this.toggleDialog.bind(this);
+    this.buyWithEth = this.buyWithEth.bind(this);
+    this.buyWithCBT = this.buyWithCBT.bind(this);
     this.state = {
       addr: 'hello_world',
       anchorEl: null,
       billboard: {},
       billboardAddress: 'unavailable',
       buyAmt: '',
-      dialog: false,
-      sellAmt: '',
       currentPrice: 0,
+      dialog: false,
+      files: [],
       keys: mockCurveData,
       name: 'none',
+      sellAmt: '',
       top: false,
     }
   }
@@ -71,6 +106,7 @@ class App extends Component {
     const { Convergent_Billboard: billboard } = contracts;
     const me = (await web3.eth.getAccounts())[0];
 
+    const cashedKey = billboard.methods.cashed.cacheCall();
     const exponentKey = billboard.methods.exponent.cacheCall();
     const inverseSlopeKey = billboard.methods.inverseSlope.cacheCall();
     const poolBalanceKey = billboard.methods.poolBalance.cacheCall();
@@ -90,6 +126,7 @@ class App extends Component {
       billboard,
       billboardAddress: billboard.address,
       keys: {
+        cashedKey,
         exponentKey,
         inverseSlopeKey,
         poolBalanceKey,
@@ -168,11 +205,38 @@ class App extends Component {
     })
   }
 
+  async buyWithEth() {
+    this.state.billboard.methods.purchaseAdvertisement("0x" + "00".repeat(32)).send({
+      from: this.state.addr,
+      value: await this.state.billboard.methods.priceToMint(utils.toBN(10**18).toString()).call(),
+    });
+    this.toggleDialog(false);
+  }
+
+  buyWithCBT() {
+
+  }
+
   toggleDrawer = (side, open) => () => {
     this.setState({
       [side]: open,
     });
   };
+
+  onDrop(files) {
+    this.setState({
+      files: files.map(file => ({
+        ...file,
+        preview: URL.createObjectURL(file)
+      }))
+    });
+  }
+
+  onCancel() {
+    this.setState({
+      files: []
+    });
+  }
 
   render() {
     const { Convergent_Billboard: billboard } = this.props.drizzleState.contracts;
@@ -193,6 +257,8 @@ class App extends Component {
       totalSupply: billboard.totalSupply[this.state.keys.totalSupplyKey].value,
     };
 
+    const cashed = billboard.cashed[this.state.keys.cashedKey].value;
+
     const currentPrice = getPrice(
       curveData.inverseSlope,
       utils.toBN(curveData.totalSupply).toString(),
@@ -200,6 +266,20 @@ class App extends Component {
     );
 
     curveData = Object.assign(curveData, { currentPrice });
+
+    const {files} = this.state;
+
+    let count = 0;
+    const thumbs = files.map(file => (
+      <div style={thumb} key={count++}>
+        <div style={thumbInner}>
+          <img
+            src={file.preview}
+            style={img}
+          />
+        </div>
+      </div>
+    ));
 
     return (
       <div className="App">
@@ -239,24 +319,38 @@ class App extends Component {
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
           >
-            <DialogTitle id="alert-dialog-title">{"Use Google's location service?"}</DialogTitle>
+            <DialogTitle id="alert-dialog-title">{"Buy the Convergent Billboard"}</DialogTitle>
             <DialogContent>
               <DialogContentText id="alert-dialog-description">
-                Let Google help apps determine location. This means sending anonymous location data to
-                Google, even when no apps are running.
+                Upload an image to change the billboard. Cost of changing the billboard
+                is 1 Convergent Billboard Token or the current price of {removeDecimals(currentPrice.toString())} ETH.
               </DialogContentText>
+              <br />
+              <section>
+                <div style={{ display: 'flex', flexDirection: 'row' }}>
+                  <Dropzone
+                    onDrop={this.onDrop.bind(this)}
+                    onFileDialogCancel={this.onCancel.bind(this)}
+                  >
+                    <p>Drag your image file here or click to upload.</p>
+                  </Dropzone>
+                </div>
+                  <div style={thumbsContainer}>
+                    {thumbs}
+                  </div>
+              </section>
             </DialogContent>
             <DialogActions>
-              <Button onClick={this.toggleDialog(false)} color="primary">
-                Disagree
+              <Button onClick={this.buyWithEth} color="primary">
+                Buy with ETH
               </Button>
-              <Button onClick={this.toggleDialog(false)} color="primary" autoFocus>
-                Agree
+              <Button onClick={this.buyWithCBT} color="primary" autoFocus>
+                Buy with CBT
               </Button>
             </DialogActions>
           </Dialog>
 
-          <Menu
+          {/* <Menu
             id="simple-menu"
             anchorEl={this.state.anchorEl}
             open={Boolean(this.state.anchorEl)}
@@ -265,7 +359,7 @@ class App extends Component {
             <MenuItem onClick={this.closeMenu}>USE ETH</MenuItem>
             <MenuItem onClick={this.closeMenu}>USE DAI</MenuItem>
             <MenuItem onClick={this.closeMenu}>USE BILLBOARD TOKEN</MenuItem>
-          </Menu>
+          </Menu> */}
 
           <Drawer anchor="top" open={this.state.top} onClose={this.toggleDrawer('top', false)}>
             <div
@@ -275,9 +369,11 @@ class App extends Component {
               // onKeyDown={this.toggleDrawer('top', false)}
             >
               <Paper elevation={1}>
-                <Typography variant="h6" id="modal-title">
+                <Typography variant="h6" id="modal-title" align='center' gutterBottom>
                   CONVERGENT BILLBOARD
                 </Typography>
+                <div style={{ display: 'flex' }}>
+                  <div style={{ flexGrow: 3, display: 'flex', justifyContent: 'center' }}>
                 <FormControl
                   aria-describedby="weight-helper-text"
                 >
@@ -292,10 +388,12 @@ class App extends Component {
                   />
                   <FormHelperText id="weight-helper-text">Amount</FormHelperText>
                 </FormControl>
+                &nbsp;&nbsp;
                 <Button color="primary" variant="outlined" onClick={this.handleBuy}>
                   Buy
                 </Button>
-                &nbsp;&nbsp;
+                </div>
+                <div style={{ flexGrow: 3, display: 'flex', justifyContent: 'center' }}>
                 <FormControl
                   aria-describedby="weight-helper-text"
                 >
@@ -310,9 +408,12 @@ class App extends Component {
                   />
                   <FormHelperText id="weight-helper-text">Amount</FormHelperText>
                 </FormControl>
+                &nbsp;&nbsp;
                 <Button color="secondary" variant="outlined" onClick={this.handleSell}>
                   Sell
                 </Button>
+                </div>
+                </div>
                 
                 <br />
                 <Table>
@@ -329,7 +430,7 @@ class App extends Component {
                       <TableCell numeric>{removeDecimals(curveData.currentPrice.toString())} Ξ</TableCell>
                       <TableCell numeric>{removeDecimals(billboard.poolBalance[this.state.keys.poolBalanceKey].value)} Ξ</TableCell>
                       <TableCell numeric>{removeDecimals(billboard.totalSupply[this.state.keys.totalSupplyKey].value)} CBT</TableCell>
-                      <TableCell numeric>{0}</TableCell>
+                      <TableCell numeric>{cashed}</TableCell>
                     </TableRow>
                   </TableBody>
                 </Table>
