@@ -835,10 +835,10 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@convergent/arc@0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@convergent/arc/-/arc-0.0.2.tgz#b66ff4674d25cfab119c0193a9355c7c9ea5b2d9"
-  integrity sha512-HL0xUI4eSFBiOoQFgoVzbzyQD7xlIIlrd29AR9m9uueltKHld8q79eULGZDobob6IiAI/u0z2KTqIwa2m2e6Ww==
+"@convergent/arc@0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@convergent/arc/-/arc-0.0.3.tgz#e173be9ef62483eacdab95c4c98f0d530b7f07a6"
+  integrity sha512-XNpXsBTxfwQI3X47WCjyaxKXAYSpmzm2HXj1LPIpaB6z4W6W+CO0u6GzcbOe/azFxoNUyo9ZstwV+2cvLEDLoQ==
   dependencies:
     openzeppelin-solidity "2.0.0-rc.3"
     truffle "5.0.0-next.12"
@@ -3984,7 +3984,7 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
-data-uri-to-buffer@^2.0.0:
+data-uri-to-buffer@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/data-uri-to-buffer/-/data-uri-to-buffer-2.0.0.tgz#0ba23671727349828c32cfafddea411908d13d23"
   integrity sha512-YbKCNLPPP4inc0E5If4OaalBc7gpaM2MRv77Pv2VThVComLKfbGYtJcdDCViDyp1Wd4SebhHLz94vp91zbK6bw==
