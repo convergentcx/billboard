@@ -57,7 +57,8 @@ const thumbsContainer = {
   display: 'flex',
   flexDirection: 'row',
   flexWrap: 'wrap',
-  marginTop: 16
+  marginTop: 'calc(50% - 100)',
+  marginLeft: 30,
 };
 
 const thumb = {
@@ -356,7 +357,7 @@ class App extends Component {
             multihash={multihash}
             height="100%"
             width="100%"
-            margin={{ top: 0, bottom: 10, left: 30, right: 40 }}
+            margin={{ top: 0, bottom: 10, left: 0, right: 60 }}
           />
 
           <div style={{ width: '100%', display: 'flex', justifyContent: 'space-around' }}>
@@ -384,39 +385,49 @@ class App extends Component {
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
           >
-            <DialogTitle id="alert-dialog-title">{"Buy the Convergent Billboard"}</DialogTitle>
-            <DialogContent>
+            <DialogTitle 
+              id="alert-dialog-title"
+              style={{
+                backgroundColor: '#f2f2f2',
+            }}>
+              {"Buy the Convergent Billboard"}
+            </DialogTitle>
+            <DialogContent             style={{
+              backgroundColor: "#f2f2f2",
+            }}>
               <DialogContentText id="alert-dialog-description">
-                Upload an image to change the billboard. Cost of changing the billboard
-                is 1 Convergent Billboard Token or the current price of {removeDecimals(currentPrice.toString())} ETH.
+                Upload an image to change the billboard. 
+                <br />
+                Cost of changing the billboard
+                is 1 <span style={{color: '#0044ff' }}>Convergent Billboard Token</span> or the current price of {removeDecimals(currentPrice.toString())} ETH.
               </DialogContentText>
               <br />
-              <section>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>
+              <section style={{ display: 'flex', flexDirection: 'row', padding: '10px' }}>
+                <div>
                   <Dropzone
                     onDrop={this.onDrop.bind(this)}
                     onFileDialogCancel={this.onCancel.bind(this)}
                   >
-                    <p>Drag your image file here or click to upload.</p>
+                    <p style={{ padding: '5px' }}>Drag your image file here or click to upload.</p>
                   </Dropzone>
                 </div>
-                  <div style={thumbsContainer}>
-                    <div style={thumb} key={1}>
-                      <div style={thumbInner}>
-                        <img
-                          src={this.state.file}
-                          style={img}
-                        />
-                      </div>
+                <div style={thumbsContainer}>
+                  <div style={thumb} key={1}>
+                    <div style={thumbInner}>
+                      <img
+                        src={this.state.file}
+                        style={img}
+                      />
                     </div>
                   </div>
+                </div>
               </section>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={this.buyWithEth} color="primary">
+            <DialogActions style={{ backgroundColor: '#f2f2f2', margin: 0, padding: '10px'}}>
+              <Button onClick={this.buyWithEth} color="secondary">
                 Buy with ETH
               </Button>
-              <Button onClick={this.buyWithCBT} color="primary" autoFocus>
+              <Button onClick={this.buyWithCBT} color="secondary" autoFocus>
                 Buy with CBT
               </Button>
             </DialogActions>
@@ -427,21 +438,23 @@ class App extends Component {
               tabIndex={0}
               role="button"
               style={{
+                backgroundColor: '#f2f2f2',
                 borderStyle: 'inset',
                 borderWidth: '3px',
+                padding: '20px'
               }}
             >
               <Typography variant="h6" id="modal-title" align="center" gutterBottom>
                 Convergent Billboard
               </Typography>
               <Typography variant="subtitle2" align="center" gutterBottom>
-                <div>Account - {accounts[0]}</div> Balance - {removeDecimals(accountBalances[accounts[0]]).slice(0, 9)} ETH | {removeDecimals(cbtBal)} CBT
+                <div>Account - <a href={`https://etherscan.io/address/${accounts[0]}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{accounts[0]}</a></div> Balance - {removeDecimals(accountBalances[accounts[0]]).slice(0, 9)} ETH | {removeDecimals(cbtBal)} CBT
               </Typography>
               <br />
               <br />
               <div style={{ display: 'flex' }}>
                 <div style={{ flexGrow: 3, display: 'flex', justifyContent: 'center' }}>
-                  <Button color="primary" variant="outlined" onClick={this.handleBuy}>
+                  <Button color="secondary" variant="outlined" onClick={this.handleBuy}>
                     Buy
                   </Button>
                   &nbsp;&nbsp;

@@ -109,30 +109,30 @@ export default class Chart extends Component {
           style={{ margin: 'auto' }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="supply" type={ 'number' } domain={[0, 500]}>
+          <XAxis dataKey="supply" type={ 'number' } domain={[0, 500]} tickCount={6}>
             {/* <Label value="Token Supply" position="bottom" dy={0} fill='white' /> */}
           </XAxis>
-          <YAxis dataKey="value" type={ 'number' } domain={[0, 0.5]}>
+          <YAxis dataKey="value" type={ 'number' } domain={[0, 0.5]} tickCount={3}>
             {/* <Label value="Price" position="left" angle='-90' dy={-10} offset={10} fill='white' /> */}
           </YAxis>
           <Tooltip
-            content={(props) => <div style={{ color: '#0095b3' }}>
-              <div>Supply: {parseFloat(props.label)}</div>    {console.log(JSON.stringify(props.payload))}
+            content={(props) => <div style={{ color: '#ffffff' }}>
+              <div>Supply: {parseFloat(props.label)}</div>
               <div>{props.payload && props.payload.length ?
                 props.payload[0].payload.buy && 'Buy: ' + props.payload[0].payload.buy || 'Sell: ' + props.payload[0].payload.sell
                 : ''}</div>
             </div>}
             cursor={{
               fill: '',
-              stroke: '#0095b3',
+              stroke: '#0044ff',
             }}
           />
-          <Area isAnimationActive={false} dots={false} stackOffset={'none'} dataKey="value" name={'price'} key={'price'} stroke='#0095b3' fill='none'/>
+          <Area isAnimationActive={false} dots={false} stackOffset={'none'} dataKey="value" name={'price'} key={'price'} stroke='#0044ff' fill='none'/>
           <Area
             isAnimationActive={false}
             stackOffset={'none'} 
             dataKey="sell" 
-            stroke="#0095b3"
+            stroke="#0044ff"
             fill='url(#rainbow)'
           />
           <ReferenceDot
@@ -142,11 +142,11 @@ export default class Chart extends Component {
             y={currentPoint.y}
             r={4}
             fill=""
-            stroke="#0095b3"
+            stroke="#0044ff"
           >
             <Label value={currentPoint.y}
               position="top"
-              fill="#0095b3"
+              fill="#0044ff"
             />
           </ReferenceDot>
         </AreaChart>
