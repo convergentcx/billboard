@@ -277,7 +277,8 @@ class App extends Component {
 
   async buyWithCBT() {
     await this.submitHash();
-    this.state.billboard.methods.submit(this.state.ipfsHash).send({
+    const mhash = getBytes32FromMultihash(this.state.ipfsHash);
+    this.state.billboard.methods.submit(mhash.digest).send({
       from: this.state.addr,
     });
     this.setState({

@@ -35,7 +35,7 @@
   "description": "",
   "main": "index.js",
   "devDependencies": {
-    "@convergent/arc": "0.0.2",
+    "@convergent/arc": "0.0.3",
     "@types/d3": "5.0.1",
     "d3": "5.7.0",
     "data-uri-to-buffer": "2.0.0",
