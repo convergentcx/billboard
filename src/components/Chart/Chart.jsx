@@ -25,22 +25,29 @@ export default class Chart extends Component {
     super(props);
     this.ref = React.createRef();
   }
-
+  
   componentDidMount() {
     const context = d3.select(this.ref);
-    
+
     context.append("svg:pattern")
     .attr("id", "rainbow")
     .attr("width", 200)
     .attr("height", 200)
     .attr("patternUnits", "userSpaceOnUse")
     .append("svg:image")
-    // .attr("xlink:href", 'https://hack.longhash.com/static/media/aboutpic@2x.b02d4782.png')
-    .attr("xlink:href", 'https://media.giphy.com/media/26AHG5KGFxSkUWw1i/giphy.gif')
+    .attr("xlink:href", `https://gateway.ipfs.io/ipfs/${this.props.multihash}`)
     .attr("width", 200)
     .attr("height", 200)
     .attr("x", 0)
     .attr("y", 0);
+  }
+
+  componentWillUpdate() {
+    const context = d3.select(this.ref);
+
+    context.select("pattern")
+    .select("image")
+    .attr("xlink:href", `https://gateway.ipfs.io/ipfs/${this.props.multihash}`)
   }
   
   getChartData() {
@@ -115,7 +122,6 @@ export default class Chart extends Component {
             stackOffset={'none'} 
             dataKey="sell" 
             stroke="#0095b3"
-            // fill='blue'
             fill='url(#rainbow)'
           />
           <ReferenceDot

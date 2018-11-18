@@ -34,6 +34,8 @@ import './App.css';
 
 import withContext from './hoc/withContext';
 import {
+  getBytes32FromMultihash,
+  getMultihashFromBytes32,
   getPrice,
   removeDecimals,
 } from './utils';
@@ -100,7 +102,9 @@ class App extends Component {
       createStatus: '',
       currentPrice: 0,
       dialog: false,
-      files: [],
+      events: [],
+      file: '',
+      ipfsHash: '',
       keys: mockCurveData,
       name: 'none',
       sellAmt: '',
@@ -111,6 +115,16 @@ class App extends Component {
   async componentDidMount() {
     const { contracts, web3 } = this.props.drizzle;
     const { Convergent_Billboard: billboard } = contracts;
+
+    billboard.events.Advertisement({
+      fromBlock: 0,
+    })
+    .on('data', (event) => {
+      const { events } = this.state;
+      events.push(event);
+      this.setState({ events });
+    });
+
     const me = (await web3.eth.getAccounts())[0];
 
     const cashedKey = billboard.methods.cashed.cacheCall();
@@ -141,10 +155,6 @@ class App extends Component {
       }, 
       currentPrice,
     })
-  }
-
-  componentDidUpdate() {
-    console.log(this.state.createStatus);
   }
 
   // Only allow up to four decimals places on input.
@@ -217,34 +227,44 @@ class App extends Component {
   }
 
   async submitHash() {
-    if (this.state.files[0] === undefined) {
+    if (!this.state.file) {
       window.alert("Please upload an image first!");
-      return;
+      throw 'no image';
     }
-    const buff = dataUriToBuffer(this.state.files[0].preview);
+    const buff = dataUriToBuffer(this.state.file);
     const result = await ipfs.add(buff, {
       progress: prog => {
-        this.setState({
-          createStatus: 'Uploaded ' + prog + '% to IPFS'
-        });
+        console.log(`ipfs progress: ${prog}%`);
       }
     });
-    console.log(result);
+
+    this.setState({
+      ipfsHash: result[0].hash,
+    });
   }
 
   async buyWithEth() {
-    this.submitHash()
-    this.state.billboard.methods.purchaseAdvertisement("0x" + "00".repeat(32)).send({
+    await this.submitHash()
+    const mhash = getBytes32FromMultihash(this.state.ipfsHash);
+    this.state.billboard.methods.purchaseAdvertisement(mhash.digest).send({
       from: this.state.addr,
       value: await this.state.billboard.methods.priceToMint(utils.toBN(10**18).toString()).call(),
+    });
+    this.setState({
+      file: '',
+      ipfsHash: '',
     });
     this.toggleDialog(false);
   }
 
   async buyWithCBT() {
     await this.submitHash();
-    this.state.billboard.methods.submit("0x" + "00".repeat(32)).send({
+    this.state.billboard.methods.submit(this.state.ipfsHash).send({
       from: this.state.addr,
+    });
+    this.setState({
+      file: '',
+      ipfsHash: '',
     });
     this.toggleDialog(false);
   }
@@ -258,19 +278,18 @@ class App extends Component {
   onDrop(files) {
     const reader = new FileReader();
     reader.onload = e => {
-      let dataURL
-    }
-    this.setState({
-      files: files.map(file => ({
-        ...file,
-        preview: URL.createObjectURL(file)
-      }))
-    });
+      console.log(e.target.result);
+      this.setState({
+        file: e.target.result,
+      })
+    };
+
+    reader.readAsDataURL(files[0]);
   }
 
   onCancel() {
     this.setState({
-      files: []
+      file: '',
     });
   }
 
@@ -303,19 +322,11 @@ class App extends Component {
 
     curveData = Object.assign(curveData, { currentPrice });
 
-    const {files} = this.state;
-
-    let count = 0;
-    const thumbs = files.map(file => (
-      <div style={thumb} key={count++}>
-        <div style={thumbInner}>
-          <img
-            src={file.preview}
-            style={img}
-          />
-        </div>
-      </div>
-    ));
+    const multihash = getMultihashFromBytes32({
+      digest: this.state.events[this.state.events.length -1].returnValues.what,
+      hashFunction: 18,
+      size: 32,
+    });
 
     return (
       <div className="App">
@@ -325,6 +336,7 @@ class App extends Component {
         </Tooltip>
           <Chart
             curveData={curveData}
+            multihash={multihash}
             height="100%"
             width="100%"
             margin={{ top: 10, bottom: 10, left: 40, right: 40 }}
@@ -372,7 +384,14 @@ class App extends Component {
                   </Dropzone>
                 </div>
                   <div style={thumbsContainer}>
-                    {thumbs}
+                    <div style={thumb} key={1}>
+                      <div style={thumbInner}>
+                        <img
+                          src={this.state.file}
+                          style={img}
+                        />
+                      </div>
+                    </div>
                   </div>
               </section>
             </DialogContent>

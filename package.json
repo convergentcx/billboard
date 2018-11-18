@@ -4,7 +4,8 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "3.5.1",
-    "ipfs-api": "^26.1.2",
+    "bs58": "^4.0.1",
+    "ipfs-api": "26.1.2",
     "react": "^16.6.1",
     "react-dom": "^16.6.1",
     "react-scripts": "2.1.1",
@@ -19,7 +20,7 @@
     "ganache": "ganache-cli -p 8777 -i 23 --account=$PK,100000000000000000000",
     "truffle:compile": "truffle compile",
     "truffle:deploy:dev": "truffle deploy --network development --reset",
-    "truffle:build:copy": "cp build src/ -r",
+    "truffle:build:copy": "cp -R build src/",
     "truffle:test": "truffle test"
   },
   "eslintConfig": {
@@ -53,5 +54,5 @@
     "ethereum"
   ],
   "author": "convergent",
-  "license": "GPL-3.0"
+  "license": "AGPL-3.0"
 }
