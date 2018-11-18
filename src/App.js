@@ -84,27 +84,28 @@ class App extends Component {
     super(props);
     this.handleBuy = this.handleBuy.bind(this);
     this.handleSell = this.handleSell.bind(this);
-    this.openMenu = this.openMenu.bind(this);
-    this.closeMenu = this.closeMenu.bind(this);
     this.buyWithEth = this.buyWithEth.bind(this);
     this.buyWithCBT = this.buyWithCBT.bind(this);
     this.submitHash = this.submitHash.bind(this);
+    this.getBuyAmt = this.getBuyAmt.bind(this);
     this.state = {
       addr: 'hello_world',
       anchorEl: null,
       billboard: {},
       billboardAddress: 'unavailable',
-      buyAmt: '',
+      buyAmt: 0,
       createStatus: '',
       currentPrice: 0,
       dialog: false,
+      ethBuyPrice: 0,
+      ethSellAmount: 0,
       events: [],
       file: '',
       ipfsHash: '',
       ipfsProg: '',
       keys: mockCurveData,
       name: 'none',
-      sellAmt: '',
+      sellAmt: 0,
       top: false,
     }
   }
@@ -130,6 +131,8 @@ class App extends Component {
     const poolBalanceKey = billboard.methods.poolBalance.cacheCall();
     const totalSupplyKey = billboard.methods.totalSupply.cacheCall();
 
+    const balKey = billboard.methods.balanceOf.cacheCall(me);
+
     const curveData = {
       exponent: await billboard.methods.exponent().call(),
       inverseSlope: await billboard.methods.inverseSlope().call(),
@@ -144,6 +147,7 @@ class App extends Component {
       billboard,
       billboardAddress: billboard.address,
       keys: {
+        balKey,
         cashedKey,
         exponentKey,
         inverseSlopeKey,
@@ -167,7 +171,7 @@ class App extends Component {
     if (split[1] && split[1].length && zeroes.indexOf(split[1]) !== -1) {
       // Right hand side of decimals is all zero.
       return { value: split[0], decimals: 0 };
-    } else if (split[1] && split[1].length) {
+    } else if (split.length === 2) {
       const decimals = split[1].length;
       const value = split[0] * 10**decimals + Number(split[1]);
       return { value, decimals }
@@ -176,44 +180,56 @@ class App extends Component {
     }
   }
 
-  async handleBuy() {
-    const validated = this.validateInput(this.state.buyAmt);
+  getBuyAmt(amt) {
+    const validated = this.validateInput(amt);
     const amount = utils.toBN(validated.value).mul(utils.toBN(10**18)).div(utils.toBN(10**validated.decimals));
+    return amount;
+  }
+
+  async handleBuy() {
+    const amount = this.getBuyAmt(this.state.buyAmt);
     this.state.billboard.methods.mint(amount.toString()).send({
       from: this.state.addr,
       value: await this.state.billboard.methods.priceToMint(amount.toString()).call(),
     });
     this.setState({
-      buyAmt: '',
+      buyAmt: 0,
     })
   }
 
-  handleChange = name => event => {
+  handleChange = name => async event => {
     this.setState({
       [name]: event.target.value,
     });
+    if (name === 'buyAmt') {
+      const amount = this.getBuyAmt(this.state.buyAmt);
+      const ethBuyPrice = await this.state.billboard.methods.priceToMint(amount.toString()).call();
+      this.setState({
+        ethBuyPrice,
+      })
+    }
+    if (name === 'sellAmt') {
+      const amount = this.getSellAmt(this.state.sellAmt);
+      const ethSellAmount = await this.state.billboard.methods.rewardForBurn(amount.toString()).call();
+      this.setState({
+        ethSellAmount,
+      })
+    }
+  }
+
+  getSellAmt(amt) {
+    const validated = this.validateInput(this.state.sellAmt)
+    const amount = utils.toBN(validated.value).mul(utils.toBN(10**18)).div(utils.toBN(10**validated.decimals));
+    return amount;
   }
 
   async handleSell() {
-    const validated = this.validateInput(this.state.sellAmt)
-    const amount = utils.toBN(validated.value).mul(utils.toBN(10**18)).div(utils.toBN(10**validated.decimals));
+    const amount = this.getSellAmt(this.state.sellAmt);
     this.state.billboard.methods.burn(amount.toString()).send({
       from: this.state.addr,
     });
     this.setState({
-      sellAmt: '',
-    })
-  }
-
-  openMenu(event) {
-    this.setState({
-      anchorEl: event.currentTarget,
-    })
-  }
-
-  closeMenu() {
-    this.setState({
-      anchorEl: null,
+      sellAmt: 0,
     })
   }
 
@@ -295,7 +311,7 @@ class App extends Component {
   }
 
   render() {
-    const { Convergent_Billboard: billboard } = this.props.drizzleState.contracts;
+    const { accounts, accountBalances, contracts: { Convergent_Billboard: billboard } } = this.props.drizzleState;
 
     if (
       !(this.state.keys.totalSupplyKey in billboard.totalSupply)
@@ -313,6 +329,7 @@ class App extends Component {
       totalSupply: billboard.totalSupply[this.state.keys.totalSupplyKey].value,
     };
 
+    const cbtBal = billboard.balanceOf[this.state.keys.balKey].value;
     const cashed = billboard.cashed[this.state.keys.cashedKey].value;
 
     const currentPrice = getPrice(
@@ -410,77 +427,91 @@ class App extends Component {
             <div
               tabIndex={0}
               role="button"
-              // onClick={this.toggleDrawer('top', false)}
-              // onKeyDown={this.toggleDrawer('top', false)}
+              style={{
+                borderStyle: 'inset',
+                borderWidth: '3px',
+              }}
             >
-              <Paper elevation={1}>
-                <Typography variant="h6" id="modal-title" align='center' gutterBottom>
-                  CONVERGENT BILLBOARD
-                </Typography>
-                <div style={{ display: 'flex' }}>
-                  <div style={{ flexGrow: 3, display: 'flex', justifyContent: 'center' }}>
-                <FormControl
-                  aria-describedby="weight-helper-text"
-                >
-                  <Input
-                    id="adornment-weight"
-                    value={this.state.buyAmt}
-                    onChange={this.handleChange('buyAmt')}
-                    endAdornment={<InputAdornment position="end">CBT</InputAdornment>}
-                    inputProps={{
-                      'aria-label': 'Weight',
-                    }}
-                  />
-                  <FormHelperText id="weight-helper-text">Amount</FormHelperText>
-                </FormControl>
-                &nbsp;&nbsp;
-                <Button color="primary" variant="outlined" onClick={this.handleBuy}>
-                  Buy
-                </Button>
+              <Typography variant="h6" id="modal-title" align="center" gutterBottom>
+                Convergent Billboard
+              </Typography>
+              <Typography variant="subtitle2" align="center" gutterBottom>
+                <div>Account - {accounts[0]}</div> Balance - {removeDecimals(accountBalances[accounts[0]]).slice(0, 9)} ETH | {removeDecimals(cbtBal)} CBT
+              </Typography>
+              <br />
+              <br />
+              <div style={{ display: 'flex' }}>
+                <div style={{ flexGrow: 3, display: 'flex', justifyContent: 'center' }}>
+                  <Button color="primary" variant="outlined" onClick={this.handleBuy}>
+                    Buy
+                  </Button>
+                  &nbsp;&nbsp;
+                  <FormControl
+                    aria-describedby="weight-helper-text"
+                  >
+                    <Input
+                      id="adornment-weight"
+                      value={this.state.buyAmt}
+                      onChange={this.handleChange('buyAmt')}
+                      endAdornment={<InputAdornment position="end">CBT</InputAdornment>}
+                      inputProps={{
+                        'aria-label': 'Weight',
+                      }}
+                    />
+                    <FormHelperText id="weight-helper-text">Amount</FormHelperText>
+                  </FormControl>
+                  &nbsp;
+                  <Button variant="contained" color="secondary" disabled>
+                    With {removeDecimals(this.state.ethBuyPrice || '0').slice(0, 9)} ETH
+                  </Button>
                 </div>
                 <div style={{ flexGrow: 3, display: 'flex', justifyContent: 'center' }}>
-                <FormControl
-                  aria-describedby="weight-helper-text"
-                >
-                  <Input
-                    id="adornment-weight"
-                    value={this.state.sellAmt}
-                    onChange={this.handleChange('sellAmt')}
-                    endAdornment={<InputAdornment position="end">CBT</InputAdornment>}
-                    inputProps={{
-                      'aria-label': 'Weight',
-                    }}
-                  />
-                  <FormHelperText id="weight-helper-text">Amount</FormHelperText>
-                </FormControl>
-                &nbsp;&nbsp;
-                <Button color="secondary" variant="outlined" onClick={this.handleSell}>
-                  Sell
-                </Button>
+                  <Button color="secondary" variant="outlined" onClick={this.handleSell}>
+                    Sell
+                  </Button>
+                  &nbsp;&nbsp;
+                  <FormControl
+                    aria-describedby="weight-helper-text"
+                  >
+                    <Input
+                      id="adornment-weight"
+                      value={this.state.sellAmt}
+                      onChange={this.handleChange('sellAmt')}
+                      endAdornment={<InputAdornment position="end">CBT</InputAdornment>}
+                      inputProps={{
+                        'aria-label': 'Weight',
+                      }}
+                    />
+                    <FormHelperText id="weight-helper-text">Amount</FormHelperText>
+                  </FormControl>
+                  &nbsp;
+                  <Button variant="contained" color="secondary" disabled>
+                    For {removeDecimals(this.state.ethSellAmount || '0').slice(0, 9)} ETH
+                  </Button>
                 </div>
-                </div>
-                
-                <br />
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell numeric>Current Price</TableCell>
-                      <TableCell numeric>Reserve Balance</TableCell>
-                      <TableCell numeric>Total Supply</TableCell>
-                      <TableCell numeric>CBT Used</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    <TableRow key={1}>
-                      <TableCell numeric>{removeDecimals(curveData.currentPrice.toString())} Ξ</TableCell>
-                      <TableCell numeric>{removeDecimals(billboard.poolBalance[this.state.keys.poolBalanceKey].value)} Ξ</TableCell>
-                      <TableCell numeric>{removeDecimals(billboard.totalSupply[this.state.keys.totalSupplyKey].value)} CBT</TableCell>
-                      <TableCell numeric>{cashed}</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
+              </div>
+              
+              <br />
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell numeric>Current Price</TableCell>
+                    <TableCell numeric>Reserve Balance</TableCell>
+                    <TableCell numeric>Total Supply</TableCell>
+                    <TableCell numeric>CBT Used</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableRow key={1}>
+                    <TableCell numeric>{removeDecimals(curveData.currentPrice.toString())} Ξ</TableCell>
+                    <TableCell numeric>{removeDecimals(billboard.poolBalance[this.state.keys.poolBalanceKey].value)} Ξ</TableCell>
+                    <TableCell numeric>{removeDecimals(billboard.totalSupply[this.state.keys.totalSupplyKey].value)} CBT</TableCell>
+                    <TableCell numeric>{cashed}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+              <br />
 
-              </Paper>
             </div>
           </Drawer>
 
