@@ -1,4 +1,9 @@
+import dataUriToBuffer from 'data-uri-to-buffer';
+import ipfsAPI from 'ipfs-api';
 import React, { Component } from 'react';
+import Dropzone from 'react-dropzone'; 
+import { utils } from 'web3';
+
 import {
   Button,
   Dialog,
@@ -11,8 +16,6 @@ import {
   FormHelperText,
   Input,
   InputAdornment,
-  // Menu,
-  // MenuItem,
   Paper,
   Table,
   TableBody,
@@ -23,16 +26,9 @@ import {
   Typography,
 } from '@material-ui/core';
 
-import Dropzone from 'react-dropzone'; 
-
-import dataUriToBuffer from 'data-uri-to-buffer';
-import ipfsAPI from 'ipfs-api';
-
 import Chart from './components/Chart/Chart';
-
-import './App.css';
-
 import withContext from './hoc/withContext';
+
 import {
   getBytes32FromMultihash,
   getMultihashFromBytes32,
@@ -40,9 +36,15 @@ import {
   removeDecimals,
 } from './utils';
 
-import { utils } from 'web3';
+import './App.css';
 
 const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' });
+
+const img = {
+  display: 'block',
+  width: 'auto',
+  height: '100%'
+};
 
 const mockCurveData = {
   currentPrice: 10,
@@ -77,12 +79,6 @@ const thumbInner = {
   overflow: 'hidden'
 };
 
-const img = {
-  display: 'block',
-  width: 'auto',
-  height: '100%'
-};
-
 class App extends Component {
   constructor(props) {
     super(props);
@@ -105,6 +101,7 @@ class App extends Component {
       events: [],
       file: '',
       ipfsHash: '',
+      ipfsProg: '',
       keys: mockCurveData,
       name: 'none',
       sellAmt: '',
@@ -231,10 +228,14 @@ class App extends Component {
       window.alert("Please upload an image first!");
       throw 'no image';
     }
+
     const buff = dataUriToBuffer(this.state.file);
     const result = await ipfs.add(buff, {
       progress: prog => {
-        console.log(`ipfs progress: ${prog}%`);
+        this.setState({
+          ipfsProg: prog,
+        })
+        console.log(`ipfs progress: ${this.state.ipfsProg}%`);
       }
     });
 
@@ -246,6 +247,7 @@ class App extends Component {
   async buyWithEth() {
     await this.submitHash()
     const mhash = getBytes32FromMultihash(this.state.ipfsHash);
+    console.log(mhash);
     this.state.billboard.methods.purchaseAdvertisement(mhash.digest).send({
       from: this.state.addr,
       value: await this.state.billboard.methods.priceToMint(utils.toBN(10**18).toString()).call(),
@@ -278,7 +280,6 @@ class App extends Component {
   onDrop(files) {
     const reader = new FileReader();
     reader.onload = e => {
-      console.log(e.target.result);
       this.setState({
         file: e.target.result,
       })
@@ -404,17 +405,6 @@ class App extends Component {
               </Button>
             </DialogActions>
           </Dialog>
-
-          {/* <Menu
-            id="simple-menu"
-            anchorEl={this.state.anchorEl}
-            open={Boolean(this.state.anchorEl)}
-            onClose={this.closeMenu}
-          >
-            <MenuItem onClick={this.closeMenu}>USE ETH</MenuItem>
-            <MenuItem onClick={this.closeMenu}>USE DAI</MenuItem>
-            <MenuItem onClick={this.closeMenu}>USE BILLBOARD TOKEN</MenuItem>
-          </Menu> */}
 
           <Drawer anchor="top" open={this.state.top} onClose={this.toggleDrawer('top', false)}>
             <div
