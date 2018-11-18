@@ -16,7 +16,6 @@ import {
   FormHelperText,
   Input,
   InputAdornment,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -357,7 +356,7 @@ class App extends Component {
             multihash={multihash}
             height="100%"
             width="100%"
-            margin={{ top: 10, bottom: 10, left: 40, right: 40 }}
+            margin={{ top: 0, bottom: 10, left: 30, right: 40 }}
           />
 
           <div style={{ width: '100%', display: 'flex', justifyContent: 'space-around' }}>
