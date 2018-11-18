@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@material-ui/core": "3.5.1",
+    "ipfs-api": "^26.1.2",
     "react": "^16.6.1",
     "react-dom": "^16.6.1",
     "react-scripts": "2.1.1",
@@ -36,6 +37,7 @@
     "@convergent/arc": "0.0.2",
     "@types/d3": "5.0.1",
     "d3": "5.7.0",
+    "data-uri-to-buffer": "^2.0.0",
     "drizzle": "1.2.4",
     "drizzle-react": "1.2.0",
     "drizzle-react-components": "1.2.0",

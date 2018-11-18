@@ -68,9 +68,17 @@ export default class Chart extends Component {
     for (let i = step; i.lte(utils.toBN(500).mul(step)); i = i.add(step)) {
       const price = getPrice(inverseSlope, i, exponent);
       if (i.lte(totalSupply)) {
-        data.push({ supply: parseFloat(removeDecimals(i)).toFixed(4), sell: parseFloat(removeDecimals(price)).toFixed(4), value: parseFloat(removeDecimals(price)).toFixed(4) });
+        data.push({ 
+          supply: parseFloat(removeDecimals(i)).toFixed(4), 
+          sell: parseFloat(removeDecimals(price)).toFixed(4), 
+          value: parseFloat(removeDecimals(price)).toFixed(4),
+        });
       } else if (i.gt(totalSupply)) {
-        data.push({ supply: parseFloat(removeDecimals(i)).toFixed(4), buy: parseFloat(removeDecimals(price)).toFixed(4), value: parseFloat(removeDecimals(price)).toFixed(4) });
+        data.push({
+          supply: parseFloat(removeDecimals(i)).toFixed(4), 
+          buy: parseFloat(removeDecimals(price)).toFixed(4), 
+          value: parseFloat(removeDecimals(price)).toFixed(4),
+        });
       }
     }
 

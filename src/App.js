@@ -25,6 +25,9 @@ import {
 
 import Dropzone from 'react-dropzone'; 
 
+import dataUriToBuffer from 'data-uri-to-buffer';
+import ipfsAPI from 'ipfs-api';
+
 import Chart from './components/Chart/Chart';
 
 import './App.css';
@@ -36,6 +39,8 @@ import {
 } from './utils';
 
 import { utils } from 'web3';
+
+const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' });
 
 const mockCurveData = {
   currentPrice: 10,
@@ -85,12 +90,14 @@ class App extends Component {
     this.closeMenu = this.closeMenu.bind(this);
     this.buyWithEth = this.buyWithEth.bind(this);
     this.buyWithCBT = this.buyWithCBT.bind(this);
+    this.submitHash = this.submitHash.bind(this);
     this.state = {
       addr: 'hello_world',
       anchorEl: null,
       billboard: {},
       billboardAddress: 'unavailable',
       buyAmt: '',
+      createStatus: '',
       currentPrice: 0,
       dialog: false,
       files: [],
@@ -136,6 +143,10 @@ class App extends Component {
     })
   }
 
+  componentDidUpdate() {
+    console.log(this.state.createStatus);
+  }
+
   // Only allow up to four decimals places on input.
   validateInput(amount) {
     const zeroes = [
@@ -146,15 +157,15 @@ class App extends Component {
     ]
 
     const split = amount.split('.');
-    if (split[1].length && zeroes.indexOf(split[1]) !== -1) {
+    if (split[1] && split[1].length && zeroes.indexOf(split[1]) !== -1) {
       // Right hand side of decimals is all zero.
       return { value: split[0], decimals: 0 };
-    } else if (split[1].length) {
+    } else if (split[1] && split[1].length) {
       const decimals = split[1].length;
       const value = split[0] * 10**decimals + Number(split[1]);
       return { value, decimals }
     } else {
-      return 'invalid';
+      return { value: amount, decimals: 0 };
     }
   }
 
@@ -205,7 +216,24 @@ class App extends Component {
     })
   }
 
+  async submitHash() {
+    if (this.state.files[0] === undefined) {
+      window.alert("Please upload an image first!");
+      return;
+    }
+    const buff = dataUriToBuffer(this.state.files[0].preview);
+    const result = await ipfs.add(buff, {
+      progress: prog => {
+        this.setState({
+          createStatus: 'Uploaded ' + prog + '% to IPFS'
+        });
+      }
+    });
+    console.log(result);
+  }
+
   async buyWithEth() {
+    this.submitHash()
     this.state.billboard.methods.purchaseAdvertisement("0x" + "00".repeat(32)).send({
       from: this.state.addr,
       value: await this.state.billboard.methods.priceToMint(utils.toBN(10**18).toString()).call(),
@@ -213,8 +241,12 @@ class App extends Component {
     this.toggleDialog(false);
   }
 
-  buyWithCBT() {
-
+  async buyWithCBT() {
+    await this.submitHash();
+    this.state.billboard.methods.submit("0x" + "00".repeat(32)).send({
+      from: this.state.addr,
+    });
+    this.toggleDialog(false);
   }
 
   toggleDrawer = (side, open) => () => {
@@ -224,6 +256,10 @@ class App extends Component {
   };
 
   onDrop(files) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      let dataURL
+    }
     this.setState({
       files: files.map(file => ({
         ...file,
