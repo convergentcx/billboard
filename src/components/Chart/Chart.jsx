@@ -35,7 +35,7 @@ export default class Chart extends Component {
     .attr("height", 200)
     .attr("patternUnits", "userSpaceOnUse")
     .append("svg:image")
-    .attr("xlink:href", `https://gateway.ipfs.io/ipfs/${this.props.multihash}`)
+    .attr("xlink:href", `https://gateway.ipfs.io/ipfs/${this.props.multihash || ''}`)
     .attr("width", 200)
     .attr("height", 200)
     .attr("x", 0)

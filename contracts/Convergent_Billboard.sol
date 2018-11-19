@@ -7,7 +7,7 @@ contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
     using SafeMath for uint256;
 
     uint256 public cashed;                      // Amount of tokens that have been "cashed out."
-    uint256 public maxTokens = 500;             // Total amount of Billboard tokens to be sold.
+    uint256 public maxTokens = 500 * 10**18;    // Total amount of Billboard tokens to be sold.
     uint256 public requiredAmt = 1 * 10**18;    // One token required per banner change.
 
     event Advertisement(bytes32 what, uint256 indexed when);
@@ -22,20 +22,22 @@ contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
         )
         public
     {}
-    
-    /// Overwrite 
-    function priceToMint(uint256 numTokens) public view returns(uint256) {
-        require(totalSupply().add(numTokens) < maxToken.mul(uint256(decimals())), "Must not have reached cap.");
-        return curveIntegral(totalSupply().add(numTokens)).sub(poolBalance);
-    }
 
     /// Overwrite
-    function rewardForBurn(uint256 numTokens) public view returns(uint256) {
-        require(totalSupply() < maxToken.mul(uint256(decimals())), "Must not have reached cap.");
-        return poolBalance.sub(curveIntegral(totalSupply().sub(numTokens)));
+    function mint(uint256 numTokens) public payable {
+        uint256 newTotal = totalSupply().add(numTokens);
+        if (newTotal > maxTokens) {
+            super.mint(maxTokens.sub(totalSupply()));
+            // The super.mint() function will not allow 0
+            // as an argument rendering this as sufficient
+            // to enforce a cap of maxTokens.
+        }
     }
 
-    function purchaseAdvertisement(bytes32 _what) public payable {
+    function purchaseAdvertisement(bytes32 _what)
+        public
+        payable
+    {
         mint(requiredAmt);
         submit(_what);
     }
@@ -59,11 +61,6 @@ contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
         owner().transfer(cliffDiff);
 
         emit Advertisement(_what, block.timestamp);
-    }
-
-    function withdraw() onlyOwner public {
-        require(totalSupply() >= maxToken.mul(uint256(decimals())), "Must have reached cap.");
-        owner().transfer(address(this).balance);
     }
 
     function () public { revert(); }

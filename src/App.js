@@ -201,20 +201,22 @@ class App extends Component {
     this.setState({
       [name]: event.target.value,
     });
-    if (name === 'buyAmt') {
-      const amount = this.getBuyAmt(this.state.buyAmt);
-      const ethBuyPrice = await this.state.billboard.methods.priceToMint(amount.toString()).call();
-      this.setState({
-        ethBuyPrice,
-      })
-    }
-    if (name === 'sellAmt') {
-      const amount = this.getSellAmt(this.state.sellAmt);
-      const ethSellAmount = await this.state.billboard.methods.rewardForBurn(amount.toString()).call();
-      this.setState({
-        ethSellAmount,
-      })
-    }
+    setTimeout(async () => {
+      if (name === 'buyAmt') {
+        const amount = this.getBuyAmt(this.state.buyAmt);
+        const ethBuyPrice = await this.state.billboard.methods.priceToMint(amount.toString()).call();
+        this.setState({
+          ethBuyPrice,
+        })
+      };
+      if (name === 'sellAmt') {
+        const amount = this.getSellAmt(this.state.sellAmt);
+        const ethSellAmount = await this.state.billboard.methods.rewardForBurn(amount.toString()).call();
+        this.setState({
+          ethSellAmount,
+        })
+      };
+    }, 500);
   }
 
   getSellAmt(amt) {
@@ -317,7 +319,10 @@ class App extends Component {
     if (
       !(this.state.keys.totalSupplyKey in billboard.totalSupply)
       || !(this.state.keys.exponentKey in billboard.exponent)
-      || !(this.state.keys.inverseSlopeKey in billboard.inverseSlope)) {
+      || !(this.state.keys.inverseSlopeKey in billboard.inverseSlope)
+      || !(this.state.keys.balKey in billboard.balanceOf)
+      || !(this.state.keys.cashedKey in billboard.cashed)
+      || !(this.state.keys.poolBalanceKey in billboard.poolBalance)) {
       return <span>Still loading...</span>
     }
 
@@ -341,11 +346,14 @@ class App extends Component {
 
     curveData = Object.assign(curveData, { currentPrice });
 
-    const multihash = getMultihashFromBytes32({
-      digest: this.state.events[this.state.events.length -1].returnValues.what,
-      hashFunction: 18,
-      size: 32,
-    });
+    let multihash;
+    if (this.state.events && this.state.events.length) {
+      multihash = getMultihashFromBytes32({
+        digest: this.state.events[this.state.events.length -1].returnValues.what,
+        hashFunction: 18,
+        size: 32,
+      });
+    }
 
     return (
       <div className="App">
