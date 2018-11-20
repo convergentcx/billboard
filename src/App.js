@@ -109,6 +109,7 @@ class App extends Component {
       sellAmt: 0,
       toggleLoading: false,
       top: false,
+      stackId: null
     }
   }
 
@@ -190,13 +191,26 @@ class App extends Component {
 
   async handleBuy() {
     const amount = this.getBuyAmt(this.state.buyAmt);
-    this.state.billboard.methods.mint(amount.toString()).send({
-      from: this.state.addr,
-      value: await this.state.billboard.methods.priceToMint(amount.toString()).call(),
-    });
-    this.setState({
-      buyAmt: 0,
-    })
+    // this.state.billboard.methods.mint(amount.toString()).send({
+    //   from: this.state.addr,
+    //   value: await this.state.billboard.methods.priceToMint(amount.toString()).call(),
+    // });
+
+    // this.setState({
+    //   buyAmt: 0,
+    // })
+
+    // USING DRIZZLE and not resetting buyAmt:
+    const stackId =
+      this.state.billboard.methods["mint"].cacheSend(
+        amount.toString(),
+        {
+          from: this.state.addr,
+          value: await this.state.billboard.methods.priceToMint(amount.toString()).call()
+        });
+    // save the `stackId` for later reference
+    this.setState({ stackId });
+  
   }
 
   handleChange = name => async event => {
@@ -229,12 +243,22 @@ class App extends Component {
 
   async handleSell() {
     const amount = this.getSellAmt(this.state.sellAmt);
-    this.state.billboard.methods.burn(amount.toString()).send({
-      from: this.state.addr,
-    });
-    this.setState({
-      sellAmt: 0,
-    })
+    // this.state.billboard.methods.burn(amount.toString()).send({
+    //   from: this.state.addr,
+    // });
+    // this.setState({
+    //   sellAmt: 0,
+    // })
+
+    // USING DRIZZLE and not resetting sellAmt:
+    const stackId =
+    this.state.billboard.methods["burn"].cacheSend(
+      amount.toString(),
+      {
+        from: this.state.addr,
+      });
+    // save the `stackId` for later reference
+    this.setState({ stackId });
   }
 
   toggleDialog = (open) => () =>  {
@@ -273,11 +297,20 @@ class App extends Component {
     await this.submitHash()
     const mhash = getBytes32FromMultihash(this.state.ipfsHash);
     console.log(mhash);
-    this.state.billboard.methods.purchaseAdvertisement(mhash.digest).send({
-      from: this.state.addr,
-      value: await this.state.billboard.methods.priceToMint(utils.toBN(10**18).toString()).call(),
-    });
+    // this.state.billboard.methods.purchaseAdvertisement(mhash.digest).send({
+    //   from: this.state.addr,
+    //   value: await this.state.billboard.methods.priceToMint(utils.toBN(10**18).toString()).call(),
+    // });
+    // USING DRIZZLE TO GET TRANSACTION STATUS:
+    const stackId = this.state.billboard.methods["purchaseAdvertisement"].cacheSend(
+      mhash.digest,
+      {
+        from: this.state.addr,
+        value: await this.state.billboard.methods.priceToMint(utils.toBN(10**18).toString()).call()
+      });
+
     this.setState({
+      stackId,
       file: '',
       ipfsHash: '',
     });
@@ -287,10 +320,18 @@ class App extends Component {
   async buyWithCBT() {
     await this.submitHash();
     const mhash = getBytes32FromMultihash(this.state.ipfsHash);
-    this.state.billboard.methods.submit(mhash.digest).send({
-      from: this.state.addr,
-    });
+    // this.state.billboard.methods.submit(mhash.digest).send({
+    //   from: this.state.addr,
+    // });
+    // USING DRIZZLE TO GET TRANSACTION STATUS:
+    const stackId = this.state.billboard.methods["submit"].cacheSend(
+      mhash.digest,
+      {
+        from: this.state.addr
+      });
+
     this.setState({
+      stackId,
       file: '',
       ipfsHash: '',
     });
@@ -319,6 +360,20 @@ class App extends Component {
       file: '',
     });
   }
+
+  getTxStatus = () => {
+    // get the transaction states from the drizzle state
+    const { transactions, transactionStack } = this.props.drizzleState;
+    // get the transaction hash using our saved `stackId`
+    const txHash = transactionStack[this.state.stackId];
+    // if transaction hash does not exist, don't display anything
+    if (!txHash) return null;
+    // otherwise, return the transaction status
+    if (transactions[txHash].status == 'success') {
+      setTimeout(() => this.props.history.push('/'), 1000)
+    }
+    return `Transaction status: ${transactions[txHash].status}`;
+  };
 
   render() {
     const { accounts, accountBalances, contracts: { Convergent_Billboard: billboard } } = this.props.drizzleState;
@@ -455,6 +510,7 @@ class App extends Component {
               <Button onClick={this.buyWithCBT} color="secondary" autoFocus>
                 Buy with CBT
               </Button>
+              <div>{this.getTxStatus()}</div>
             </DialogActions>
           </Dialog>
 
@@ -548,7 +604,7 @@ class App extends Component {
                 </TableBody>
               </Table>
               <br />
-
+              <div>{this.getTxStatus()}</div>
             </div>
           </Drawer>
 
