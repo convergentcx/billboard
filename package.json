@@ -21,7 +21,7 @@
     "ganache": "ganache-cli -p 8777 -i 23 --account=$PK,10000000000000000000000",
     "truffle:compile": "truffle compile",
     "truffle:deploy:dev": "truffle deploy --network development --reset",
-    "truffle:deploy:rinkeby": "truffle deploy --network rinkeby --reset",
+    "truffle:deploy:rinkeby": "truffle migrate --network rinkeby",
     "truffle:build:copy": "cp -R build src/",
     "truffle:test": "truffle test"
   },
