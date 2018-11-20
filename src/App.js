@@ -6,6 +6,7 @@ import { utils } from 'web3';
 
 import {
   Button,
+  LinearProgress,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -106,6 +107,7 @@ class App extends Component {
       keys: mockCurveData,
       name: 'none',
       sellAmt: 0,
+      toggleLoading: false,
       top: false,
     }
   }
@@ -243,11 +245,15 @@ class App extends Component {
 
   async submitHash() {
     if (!this.state.file) {
-      window.alert("Please upload an image first!");
+      window.alert("Upload an image first!");
       throw 'no image';
     }
 
     const buff = dataUriToBuffer(this.state.file);
+    this.setState({
+      toggleLoading: true,
+    });
+
     const result = await ipfs.add(buff, {
       progress: prog => {
         this.setState({
@@ -259,6 +265,7 @@ class App extends Component {
 
     this.setState({
       ipfsHash: result[0].hash,
+      toggleLoading: false,
     });
   }
 
@@ -395,11 +402,14 @@ class App extends Component {
             aria-describedby="alert-dialog-description"
           >
             <DialogTitle 
+              disableTypography
               id="alert-dialog-title"
               style={{
                 backgroundColor: '#f2f2f2',
+                display: 'flex',
+                justifyContent: 'space-between',
             }}>
-              {"Buy the Convergent Billboard"}
+              <Typography variant="h6">Buy the Convergent Billboard</Typography><Button onClick={() => alert("Image will be rendered as 200x200 px.")}>protip</Button>
             </DialogTitle>
             <DialogContent             style={{
               backgroundColor: "#f2f2f2",
@@ -431,6 +441,12 @@ class App extends Component {
                   </div>
                 </div>
               </section>
+              {this.state.toggleLoading &&
+              <div>
+                <LinearProgress color="secondary" />
+                Uploading to IPFS! 📡
+              </div>
+              }
             </DialogContent>
             <DialogActions style={{ backgroundColor: '#f2f2f2', margin: 0, padding: '10px'}}>
               <Button onClick={this.buyWithEth} color="secondary">

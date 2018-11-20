@@ -18,7 +18,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "ganache": "ganache-cli -p 8777 -i 23 --account=$PK,100000000000000000000",
+    "ganache": "ganache-cli -p 8777 -i 23 --account=$PK,10000000000000000000000",
     "truffle:compile": "truffle compile",
     "truffle:deploy:dev": "truffle deploy --network development --reset",
     "truffle:deploy:rinkeby": "truffle deploy --network rinkeby --reset",

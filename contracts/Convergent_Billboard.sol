@@ -31,6 +31,8 @@ contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
             // The super.mint() function will not allow 0
             // as an argument rendering this as sufficient
             // to enforce a cap of maxTokens.
+        } else {
+            super.mint(numTokens);
         }
     }
 
