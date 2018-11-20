@@ -369,9 +369,6 @@ class App extends Component {
     // if transaction hash does not exist, don't display anything
     if (!txHash) return null;
     // otherwise, return the transaction status
-    if (transactions[txHash].status == 'success') {
-      setTimeout(() => this.props.history.push('/'), 1000)
-    }
     return `Transaction status: ${transactions[txHash].status}`;
   };
 
