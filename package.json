@@ -5,7 +5,7 @@
   "dependencies": {
     "@material-ui/core": "3.5.1",
     "bs58": "4.0.1",
-    "dotenv": "^6.1.0",
+    "dotenv": "6.1.0",
     "ipfs-api": "26.1.2",
     "react": "^16.6.1",
     "react-dom": "^16.6.1",
@@ -34,8 +34,8 @@
     "not ie <= 11",
     "not op_mini all"
   ],
-  "description": "",
-  "main": "index.js",
+  "description": "A bonding curve linked to an advertisement.",
+  "main": "index.html",
   "devDependencies": {
     "@convergent/arc": "0.0.3",
     "@types/d3": "5.0.1",
@@ -46,8 +46,7 @@
     "drizzle-react-components": "1.2.0",
     "ganache-cli": "6.1.8",
     "react-dropzone": "7.0.1",
-    "truffle": "5.0.0-next.15",
-    "truffle-hdwallet-provider": "^0.0.6"
+    "truffle": "5.0.0-next.15"
   },
   "repository": {
     "type": "git",
