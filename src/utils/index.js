@@ -1,6 +1,8 @@
 import bs58 from 'bs58';
 import { utils as w3utils } from 'web3';
 
+const { toBN } = w3utils;
+
 export const addDecimals = (tokens) => {
   return w3utils.toWei(String(tokens), 'ether').toString();
 }
@@ -35,3 +37,15 @@ export const getMultihashFromBytes32 = (mhashObj) => {
   multihashBytes.set(hashBytes, 2);
   return bs58.encode(multihashBytes);
 }
+
+// export const curveIntegral = (t, exp, inverseSlope, dec) => {
+//   const nexp = exp.add(1);
+//   return  (t.pow(nexp)).div(nexp).div(inverseSlope).div(dec);
+// }
+
+// export const priceToMint = (numTokens, totalSupply, poolBalance) => {
+//   numTokens = toBN(numTokens);
+//   totalSupply = toBN(totalSupply);
+//   poolBalance = toBN(poolBalance);
+//   return curveIntegral(totalSupply.add(numTokens), toBN(1), toBN(1000), toBN(10**18)).sub(poolBalance)
+// }

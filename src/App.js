@@ -6,6 +6,7 @@ import { utils } from 'web3';
 
 import {
   Button,
+  LinearProgress,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -106,6 +107,7 @@ class App extends Component {
       keys: mockCurveData,
       name: 'none',
       sellAmt: 0,
+      toggleLoading: false,
       top: false,
     }
   }
@@ -201,20 +203,22 @@ class App extends Component {
     this.setState({
       [name]: event.target.value,
     });
-    if (name === 'buyAmt') {
-      const amount = this.getBuyAmt(this.state.buyAmt);
-      const ethBuyPrice = await this.state.billboard.methods.priceToMint(amount.toString()).call();
-      this.setState({
-        ethBuyPrice,
-      })
-    }
-    if (name === 'sellAmt') {
-      const amount = this.getSellAmt(this.state.sellAmt);
-      const ethSellAmount = await this.state.billboard.methods.rewardForBurn(amount.toString()).call();
-      this.setState({
-        ethSellAmount,
-      })
-    }
+    setTimeout(async () => {
+      if (name === 'buyAmt') {
+        const amount = this.getBuyAmt(this.state.buyAmt);
+        const ethBuyPrice = await this.state.billboard.methods.priceToMint(amount.toString()).call();
+        this.setState({
+          ethBuyPrice,
+        })
+      };
+      if (name === 'sellAmt') {
+        const amount = this.getSellAmt(this.state.sellAmt);
+        const ethSellAmount = await this.state.billboard.methods.rewardForBurn(amount.toString()).call();
+        this.setState({
+          ethSellAmount,
+        })
+      };
+    }, 500);
   }
 
   getSellAmt(amt) {
@@ -241,11 +245,15 @@ class App extends Component {
 
   async submitHash() {
     if (!this.state.file) {
-      window.alert("Please upload an image first!");
+      window.alert("Upload an image first!");
       throw 'no image';
     }
 
     const buff = dataUriToBuffer(this.state.file);
+    this.setState({
+      toggleLoading: true,
+    });
+
     const result = await ipfs.add(buff, {
       progress: prog => {
         this.setState({
@@ -257,6 +265,7 @@ class App extends Component {
 
     this.setState({
       ipfsHash: result[0].hash,
+      toggleLoading: false,
     });
   }
 
@@ -277,7 +286,8 @@ class App extends Component {
 
   async buyWithCBT() {
     await this.submitHash();
-    this.state.billboard.methods.submit(this.state.ipfsHash).send({
+    const mhash = getBytes32FromMultihash(this.state.ipfsHash);
+    this.state.billboard.methods.submit(mhash.digest).send({
       from: this.state.addr,
     });
     this.setState({
@@ -316,7 +326,10 @@ class App extends Component {
     if (
       !(this.state.keys.totalSupplyKey in billboard.totalSupply)
       || !(this.state.keys.exponentKey in billboard.exponent)
-      || !(this.state.keys.inverseSlopeKey in billboard.inverseSlope)) {
+      || !(this.state.keys.inverseSlopeKey in billboard.inverseSlope)
+      || !(this.state.keys.balKey in billboard.balanceOf)
+      || !(this.state.keys.cashedKey in billboard.cashed)
+      || !(this.state.keys.poolBalanceKey in billboard.poolBalance)) {
       return <span>Still loading...</span>
     }
 
@@ -340,11 +353,14 @@ class App extends Component {
 
     curveData = Object.assign(curveData, { currentPrice });
 
-    const multihash = getMultihashFromBytes32({
-      digest: this.state.events[this.state.events.length -1].returnValues.what,
-      hashFunction: 18,
-      size: 32,
-    });
+    let multihash;
+    if (this.state.events && this.state.events.length) {
+      multihash = getMultihashFromBytes32({
+        digest: this.state.events[this.state.events.length -1].returnValues.what,
+        hashFunction: 18,
+        size: 32,
+      });
+    }
 
     return (
       <div className="App">
@@ -386,11 +402,14 @@ class App extends Component {
             aria-describedby="alert-dialog-description"
           >
             <DialogTitle 
+              disableTypography
               id="alert-dialog-title"
               style={{
                 backgroundColor: '#f2f2f2',
+                display: 'flex',
+                justifyContent: 'space-between',
             }}>
-              {"Buy the Convergent Billboard"}
+              <Typography variant="h6">Buy the Convergent Billboard</Typography><Button onClick={() => alert("Image will be rendered as 200x200 px.")}>protip</Button>
             </DialogTitle>
             <DialogContent             style={{
               backgroundColor: "#f2f2f2",
@@ -422,6 +441,12 @@ class App extends Component {
                   </div>
                 </div>
               </section>
+              {this.state.toggleLoading &&
+              <div>
+                <LinearProgress color="secondary" />
+                Uploading to IPFS! 📡
+              </div>
+              }
             </DialogContent>
             <DialogActions style={{ backgroundColor: '#f2f2f2', margin: 0, padding: '10px'}}>
               <Button onClick={this.buyWithEth} color="secondary">
