@@ -1,18 +1,18 @@
 pragma solidity ^0.4.24;
 
 import "@convergent/arc/contracts/EthPolynomialCurvedToken.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
+contract Convergent_Billboard is EthPolynomialCurvedToken {
     using SafeMath for uint256;
 
     uint256 public cashed;                      // Amount of tokens that have been "cashed out."
-    uint256 public maxTokens = 500 * 10**18;    // Total amount of Billboard tokens to be sold.
-    uint256 public requiredAmt = 1 * 10**18;    // One token required per banner change.
+    uint256 public maxTokens;                   // Total amount of Billboard tokens to be sold.
+    uint256 public requiredAmt;                 // Required amount of token per banner change.
+    address public safe;                        // Target to send the funds.
 
     event Advertisement(bytes32 what, uint256 indexed when);
 
-    constructor()
+    constructor(uint256 _maxTokens, uint256 _requiredAmt, address _safe)
         EthPolynomialCurvedToken(
             "Convergent Billboard Token",
             "CBT",
@@ -21,7 +21,11 @@ contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
             1000
         )
         public
-    {}
+    {
+        maxTokens = _maxTokens * 10**18;
+        requiredAmt = _requiredAmt * 10**18;
+        safe = _safe;
+    }
 
     /// Overwrite
     function mint(uint256 numTokens) public payable {
@@ -60,7 +64,7 @@ contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
             (cashed - 1).mul(dec)
         );
         uint256 cliffDiff = newCliff.sub(oldCliff);
-        owner().transfer(cliffDiff);
+        safe.transfer(cliffDiff);
 
         emit Advertisement(_what, block.timestamp);
     }

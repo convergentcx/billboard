@@ -36,6 +36,9 @@ import {
   removeDecimals,
 } from './utils';
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import './App.css';
 
 const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' });
@@ -109,6 +112,7 @@ class App extends Component {
       sellAmt: 0,
       toggleLoading: false,
       top: false,
+      txStatus: '',
       stackId: null
     }
   }
@@ -191,18 +195,9 @@ class App extends Component {
 
   async handleBuy() {
     const amount = this.getBuyAmt(this.state.buyAmt);
-    // this.state.billboard.methods.mint(amount.toString()).send({
-    //   from: this.state.addr,
-    //   value: await this.state.billboard.methods.priceToMint(amount.toString()).call(),
-    // });
-
-    // this.setState({
-    //   buyAmt: 0,
-    // })
-
     // USING DRIZZLE and not resetting buyAmt:
     const stackId =
-      this.state.billboard.methods["mint"].cacheSend(
+      this.state.billboard.methods.mint.cacheSend(
         amount.toString(),
         {
           from: this.state.addr,
@@ -210,8 +205,41 @@ class App extends Component {
         });
     // save the `stackId` for later reference
     this.setState({ stackId });
-  
+    this.waitForMined();
   }
+
+  waitForMined = () => {
+    const interval = setInterval(() => {
+      const status = this.getTxStatus();
+      if (status === 'pending' && this.state.txStatus != 'pending') {
+        toast.info('Waiting for transaction to be mined...', { className: 'blue-background' })
+        this.setState({
+          txStatus: 'pending',
+        })
+      }
+      if (status === 'success') {
+        toast.success('Transaction mined!', { className: 'green-background' });
+        clearInterval(this.state.interval);
+        this.setState({
+          txStatus: 'success',
+        })
+      }
+    }, 1200);
+    this.setState({
+      interval,
+    });
+  }
+
+  getTxStatus = () => {
+    // get the transaction states from the drizzle state
+    const { transactions, transactionStack } = this.props.drizzleState;
+    // get the transaction hash using our saved `stackId`
+    const txHash = transactionStack[this.state.stackId];
+    // if transaction hash does not exist, don't display anything
+    if (!txHash) return null;
+    // otherwise, return the transaction status
+    return transactions[txHash].status;
+  };
 
   handleChange = name => async event => {
     this.setState({
@@ -243,22 +271,13 @@ class App extends Component {
 
   async handleSell() {
     const amount = this.getSellAmt(this.state.sellAmt);
-    // this.state.billboard.methods.burn(amount.toString()).send({
-    //   from: this.state.addr,
-    // });
-    // this.setState({
-    //   sellAmt: 0,
-    // })
-
-    // USING DRIZZLE and not resetting sellAmt:
-    const stackId =
-    this.state.billboard.methods["burn"].cacheSend(
+    const stackId = this.state.billboard.methods.burn.cacheSend(
       amount.toString(),
       {
         from: this.state.addr,
       });
-    // save the `stackId` for later reference
     this.setState({ stackId });
+    this.waitForMined();
   }
 
   toggleDialog = (open) => () =>  {
@@ -296,13 +315,7 @@ class App extends Component {
   async buyWithEth() {
     await this.submitHash()
     const mhash = getBytes32FromMultihash(this.state.ipfsHash);
-    console.log(mhash);
-    // this.state.billboard.methods.purchaseAdvertisement(mhash.digest).send({
-    //   from: this.state.addr,
-    //   value: await this.state.billboard.methods.priceToMint(utils.toBN(10**18).toString()).call(),
-    // });
-    // USING DRIZZLE TO GET TRANSACTION STATUS:
-    const stackId = this.state.billboard.methods["purchaseAdvertisement"].cacheSend(
+    const stackId = this.state.billboard.methods.purchaseAdvertisement.cacheSend(
       mhash.digest,
       {
         from: this.state.addr,
@@ -315,16 +328,13 @@ class App extends Component {
       ipfsHash: '',
     });
     this.toggleDialog(false);
+    this.waitForMined();
   }
 
   async buyWithCBT() {
     await this.submitHash();
     const mhash = getBytes32FromMultihash(this.state.ipfsHash);
-    // this.state.billboard.methods.submit(mhash.digest).send({
-    //   from: this.state.addr,
-    // });
-    // USING DRIZZLE TO GET TRANSACTION STATUS:
-    const stackId = this.state.billboard.methods["submit"].cacheSend(
+    const stackId = this.state.billboard.methods.submit.cacheSend(
       mhash.digest,
       {
         from: this.state.addr
@@ -336,6 +346,7 @@ class App extends Component {
       ipfsHash: '',
     });
     this.toggleDialog(false);
+    this.waitForMined();
   }
 
   toggleDrawer = (side, open) => () => {
@@ -360,17 +371,6 @@ class App extends Component {
       file: '',
     });
   }
-
-  getTxStatus = () => {
-    // get the transaction states from the drizzle state
-    const { transactions, transactionStack } = this.props.drizzleState;
-    // get the transaction hash using our saved `stackId`
-    const txHash = transactionStack[this.state.stackId];
-    // if transaction hash does not exist, don't display anything
-    if (!txHash) return null;
-    // otherwise, return the transaction status
-    return `Transaction status: ${transactions[txHash].status}`;
-  };
 
   render() {
     const { accounts, accountBalances, contracts: { Convergent_Billboard: billboard } } = this.props.drizzleState;
@@ -507,7 +507,7 @@ class App extends Component {
               <Button onClick={this.buyWithCBT} color="secondary" autoFocus>
                 Buy with CBT
               </Button>
-              <div>{this.getTxStatus()}</div>
+              {/* <div>{this.getTxStatus()}</div> */}
             </DialogActions>
           </Dialog>
 
@@ -601,10 +601,11 @@ class App extends Component {
                 </TableBody>
               </Table>
               <br />
-              <div>{this.getTxStatus()}</div>
+              {/* <div>{this.getTxStatus()}</div> */}
             </div>
           </Drawer>
 
+          <ToastContainer autoClose={false} closeOnClick />  
         </header>
       </div>
     );
