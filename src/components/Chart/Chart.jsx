@@ -72,7 +72,7 @@ export default class Chart extends Component {
     ];
 
     const step = utils.toBN(10**17);
-    for (let i = step; i.lte(utils.toBN(5000).mul(step)); i = i.add(step)) {
+    for (let i = step; i.lte(utils.toBN(10000).mul(step)); i = i.add(step)) {
       const price = getPrice(inverseSlope, i, exponent);
       if (i.lte(totalSupply)) {
         data.push({ 
@@ -109,10 +109,10 @@ export default class Chart extends Component {
           style={{ margin: 'auto' }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="supply" type={ 'number' } domain={[0, 500]} tickCount={6}>
+          <XAxis dataKey="supply" type={ 'number' } domain={[0, 1000]} tickCount={6}>
             {/* <Label value="Token Supply" position="bottom" dy={0} fill='white' /> */}
           </XAxis>
-          <YAxis dataKey="value" type={ 'number' } domain={[0, 0.5]} tickCount={3}>
+          <YAxis dataKey="value" type={ 'number' } domain={[0, 1]} tickCount={3}>
             {/* <Label value="Price" position="left" angle='-90' dy={-10} offset={10} fill='white' /> */}
           </YAxis>
           <Tooltip

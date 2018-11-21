@@ -3,76 +3,34 @@ pragma solidity ^0.4.24;
 // contact : dave@akomba.com
 // released under Apache 2.0 licence
 // input  /home/volt/workspaces/convergentcx/billboard/contracts/Convergent_Billboard.sol
-// flattened :  Tuesday, 20-Nov-18 02:48:52 UTC
-contract Ownable {
-  address private _owner;
+// flattened :  Wednesday, 21-Nov-18 00:21:30 UTC
+interface IERC20 {
+  function totalSupply() external view returns (uint256);
 
+  function balanceOf(address who) external view returns (uint256);
 
-  event OwnershipRenounced(address indexed previousOwner);
-  event OwnershipTransferred(
-    address indexed previousOwner,
-    address indexed newOwner
+  function allowance(address owner, address spender)
+    external view returns (uint256);
+
+  function transfer(address to, uint256 value) external returns (bool);
+
+  function approve(address spender, uint256 value)
+    external returns (bool);
+
+  function transferFrom(address from, address to, uint256 value)
+    external returns (bool);
+
+  event Transfer(
+    address indexed from,
+    address indexed to,
+    uint256 value
   );
 
-
-  /**
-   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
-   * account.
-   */
-  constructor() public {
-    _owner = msg.sender;
-  }
-
-  /**
-   * @return the address of the owner.
-   */
-  function owner() public view returns(address) {
-    return _owner;
-  }
-
-  /**
-   * @dev Throws if called by any account other than the owner.
-   */
-  modifier onlyOwner() {
-    require(isOwner());
-    _;
-  }
-
-  /**
-   * @return true if `msg.sender` is the owner of the contract.
-   */
-  function isOwner() public view returns(bool) {
-    return msg.sender == _owner;
-  }
-
-  /**
-   * @dev Allows the current owner to relinquish control of the contract.
-   * @notice Renouncing to ownership will leave the contract without an owner.
-   * It will not be possible to call the functions with the `onlyOwner`
-   * modifier anymore.
-   */
-  function renounceOwnership() public onlyOwner {
-    emit OwnershipRenounced(_owner);
-    _owner = address(0);
-  }
-
-  /**
-   * @dev Allows the current owner to transfer control of the contract to a newOwner.
-   * @param newOwner The address to transfer ownership to.
-   */
-  function transferOwnership(address newOwner) public onlyOwner {
-    _transferOwnership(newOwner);
-  }
-
-  /**
-   * @dev Transfers control of the contract to a newOwner.
-   * @param newOwner The address to transfer ownership to.
-   */
-  function _transferOwnership(address newOwner) internal {
-    require(newOwner != address(0));
-    emit OwnershipTransferred(_owner, newOwner);
-    _owner = newOwner;
-  }
+  event Approval(
+    address indexed owner,
+    address indexed spender,
+    uint256 value
+  );
 }
 
 library SafeMath {
@@ -133,35 +91,6 @@ library SafeMath {
     require(b != 0);
     return a % b;
   }
-}
-
-interface IERC20 {
-  function totalSupply() external view returns (uint256);
-
-  function balanceOf(address who) external view returns (uint256);
-
-  function allowance(address owner, address spender)
-    external view returns (uint256);
-
-  function transfer(address to, uint256 value) external returns (bool);
-
-  function approve(address spender, uint256 value)
-    external returns (bool);
-
-  function transferFrom(address from, address to, uint256 value)
-    external returns (bool);
-
-  event Transfer(
-    address indexed from,
-    address indexed to,
-    uint256 value
-  );
-
-  event Approval(
-    address indexed owner,
-    address indexed spender,
-    uint256 value
-  );
 }
 
 contract ERC20Detailed is IERC20 {
@@ -487,16 +416,17 @@ contract EthPolynomialCurvedToken is EthBondingCurvedToken {
     }
 }
 
-contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
+contract Convergent_Billboard is EthPolynomialCurvedToken {
     using SafeMath for uint256;
 
     uint256 public cashed;                      // Amount of tokens that have been "cashed out."
-    uint256 public maxTokens = 500 * 10**18;    // Total amount of Billboard tokens to be sold.
-    uint256 public requiredAmt = 1 * 10**18;    // One token required per banner change.
+    uint256 public maxTokens;                   // Total amount of Billboard tokens to be sold.
+    uint256 public requiredAmt;                 // Required amount of token per banner change.
+    address public safe;                        // Target to send the funds.
 
     event Advertisement(bytes32 what, uint256 indexed when);
 
-    constructor()
+    constructor(uint256 _maxTokens, uint256 _requiredAmt, address _safe)
         EthPolynomialCurvedToken(
             "Convergent Billboard Token",
             "CBT",
@@ -505,7 +435,11 @@ contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
             1000
         )
         public
-    {}
+    {
+        maxTokens = _maxTokens * 10**18;
+        requiredAmt = _requiredAmt * 10**18;
+        safe = _safe;
+    }
 
     /// Overwrite
     function mint(uint256 numTokens) public payable {
@@ -544,7 +478,7 @@ contract Convergent_Billboard is Ownable, EthPolynomialCurvedToken {
             (cashed - 1).mul(dec)
         );
         uint256 cliffDiff = newCliff.sub(oldCliff);
-        owner().transfer(cliffDiff);
+        safe.transfer(cliffDiff);
 
         emit Advertisement(_what, block.timestamp);
     }

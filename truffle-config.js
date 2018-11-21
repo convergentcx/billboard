@@ -1,5 +1,3 @@
-require('dotenv').config()
-
 module.exports = {
   networks: {
 
@@ -9,11 +7,24 @@ module.exports = {
      network_id: "23",        // Any network (default: none)
     },
 
+    mainnet: {
+      host: 'localhost',
+      port: 8545,
+      network_id: '1',
+      skipDryRun: true,
+      confirmations: 0,
+      gasPrice: 5000000000,   // 5 gwei
+      gas: 2523835,
+    },
+
     rinkeby: {
       host: 'localhost',
       port: 8545,
       network_id: '4',
       skipDryRun: true,
+      confirmations: 0,
+      gasPrice: 3000000000,   // 3 gwei
+      gas: 3000000,
     },
 
     // Another network with more advanced options...
