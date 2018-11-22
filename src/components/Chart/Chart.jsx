@@ -106,6 +106,7 @@ export default class Chart extends Component {
         <AreaChart
           data={data}
           margin={margin}
+          onClick={(props) => this.props.chartClick(props.activeLabel)}
           style={{ margin: 'auto' }}
         >
           <CartesianGrid strokeDasharray="3 3" />
@@ -116,12 +117,17 @@ export default class Chart extends Component {
             {/* <Label value="Price" position="left" angle='-90' dy={-10} offset={10} fill='white' /> */}
           </YAxis>
           <Tooltip
-            content={(props) => <div style={{ color: '#ffffff' }}>
-              <div>Supply: {parseFloat(props.label)}</div>
-              <div>{props.payload && props.payload.length ?
-                props.payload[0].payload.buy && 'Buy: ' + props.payload[0].payload.buy || 'Sell: ' + props.payload[0].payload.sell
-                : ''}</div>
-            </div>}
+            content={(props) => {
+              // console.log(props.coordinate)
+              return(
+              <div style={{ color: '#ffffff' }}>
+                <div>Supply: {parseFloat(props.label)}</div>
+                <div>{props.payload && props.payload.length ?
+                  props.payload[0].payload.buy && 'Buy: ' + props.payload[0].payload.buy || 'Sell: ' + props.payload[0].payload.sell
+                  : ''}
+                </div>
+              </div>
+              )}}
             cursor={{
               fill: '',
               stroke: '#0044ff',
