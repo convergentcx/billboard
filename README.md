@@ -2,7 +2,7 @@
 
 The Convergent Billboard is a bonding curve linked to an advertisement.
 
-> protip: For a primer on bonding curves see [here]().
+> protip: For a primer on the Convergent Billboard read the [article](https://medium.com/convergentcx/the-convergent-billboard-6594b933648e)
 
 ## Tell me more...
 

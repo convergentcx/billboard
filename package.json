@@ -38,6 +38,7 @@
   "main": "index.html",
   "devDependencies": {
     "@convergent/arc": "0.0.3",
+    "@material-ui/icons": "^3.0.1",
     "@types/d3": "5.0.1",
     "d3": "5.7.0",
     "data-uri-to-buffer": "2.0.0",

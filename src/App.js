@@ -26,6 +26,10 @@ import {
   Typography,
 } from '@material-ui/core';
 
+import {
+  Help
+} from '@material-ui/icons'
+
 import Chart from './components/Chart/Chart';
 import withContext from './hoc/withContext';
 
@@ -417,9 +421,10 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-        <Tooltip title={this.state.billboardAddress} placement="top" interactive>
+          <Help className="App-help" style={{ position: 'absolute', top: '5%', right: '5%', left: 'auto' }} onClick={() => window.open('https://medium.com/convergentcx/the-convergent-billboard-6594b933648e')} />
+        {/* <Tooltip title={this.state.billboardAddress} placement="top" interactive> */}
           <h1>Convergent Billboard</h1>
-        </Tooltip>
+        {/* </Tooltip> */}
           <Chart
             curveData={curveData}
             multihash={multihash}
@@ -523,10 +528,12 @@ class App extends Component {
               }}
             >
               <Typography variant="h6" id="modal-title" align="center" gutterBottom>
-                Convergent Billboard
+                <a href={`https://etherscan.io/address/${this.state.billboardAddress}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                  Convergent Billboard
+                </a>
               </Typography>
               <Typography variant="subtitle2" align="center" gutterBottom>
-                <div>Account - <a href={`https://etherscan.io/address/${accounts[0]}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{accounts[0]}</a></div> Balance - {removeDecimals(accountBalances[accounts[0]]).slice(0, 9)} ETH | {removeDecimals(cbtBal)} CBT
+                <div>Your Account - <a href={`https://etherscan.io/address/${accounts[0]}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{accounts[0].slice(0, 10) + '...' + accounts[0].slice(-4)}</a></div> Your Balances - {removeDecimals(accountBalances[accounts[0]]).slice(0, 9)} ETH | {removeDecimals(cbtBal)} CBT
               </Typography>
               <br />
               <br />
@@ -605,7 +612,7 @@ class App extends Component {
             </div>
           </Drawer>
 
-          <ToastContainer autoClose={false} closeOnClick />  
+          <ToastContainer autoClose={false} closeOnClick />
         </header>
       </div>
     );
