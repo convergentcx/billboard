@@ -218,13 +218,13 @@ class App extends Component {
   waitForMined = () => {
     const interval = setInterval(() => {
       const status = this.getTxStatus();
-      if (status === 'pending' && this.state.txStatus != 'pending') {
+      if (status === 'pending' && this.state.txStatus !== 'pending') {
         toast.info('Waiting for transaction to be mined...', { className: 'blue-background' })
         this.setState({
           txStatus: 'pending',
         })
       }
-      if (status === 'success') {
+      if (status === 'success' && this.state.txStatus !== 'success') {
         toast.success('Transaction mined!', { className: 'green-background' });
         clearInterval(this.state.interval);
         this.setState({
