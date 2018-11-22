@@ -90,12 +90,12 @@ const thumbInner = {
 class App extends Component {
   constructor(props) {
     super(props);
+    this.buyWithCBT = this.buyWithCBT.bind(this);
+    this.buyWithEth = this.buyWithEth.bind(this);
+    this.getBuyAmt = this.getBuyAmt.bind(this);
     this.handleBuy = this.handleBuy.bind(this);
     this.handleSell = this.handleSell.bind(this);
-    this.buyWithEth = this.buyWithEth.bind(this);
-    this.buyWithCBT = this.buyWithCBT.bind(this);
     this.submitHash = this.submitHash.bind(this);
-    this.getBuyAmt = this.getBuyAmt.bind(this);
     this.state = {
       addr: 'hello_world',
       anchorEl: null,
@@ -113,11 +113,12 @@ class App extends Component {
       ipfsProg: '',
       keys: mockCurveData,
       name: 'none',
+      netId: 0,
       sellAmt: 0,
+      stackId: null,
       toggleLoading: false,
       top: false,
       txStatus: '',
-      stackId: null
     }
   }
 
@@ -135,6 +136,7 @@ class App extends Component {
     });
 
     const me = (await web3.eth.getAccounts())[0];
+    const netId = await web3.eth.net.getId();
 
     const cashedKey = billboard.methods.cashed.cacheCall();
     const exponentKey = billboard.methods.exponent.cacheCall();
@@ -166,6 +168,7 @@ class App extends Component {
         totalSupplyKey,
       }, 
       currentPrice,
+      netId,
     })
   }
 
@@ -418,6 +421,13 @@ class App extends Component {
       });
     }
 
+    let etherscanStr;
+    if (this.state.netId === 1) {
+      etherscanStr = 'https://etherscan.io';
+    } else {
+      etherscanStr = 'https://rinkeby.etherscan.io';
+    }
+
     return (
       <div className="App">
         <header className="App-header">
@@ -528,12 +538,12 @@ class App extends Component {
               }}
             >
               <Typography variant="h6" id="modal-title" align="center" gutterBottom>
-                <a href={`https://etherscan.io/address/${this.state.billboardAddress}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                <a href={`${etherscanStr}/address/${this.state.billboardAddress}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                   Convergent Billboard
                 </a>
               </Typography>
               <Typography variant="subtitle2" align="center" gutterBottom>
-                <div>Your Account - <a href={`https://etherscan.io/address/${accounts[0]}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{accounts[0].slice(0, 10) + '...' + accounts[0].slice(-4)}</a></div> Your Balances - {removeDecimals(accountBalances[accounts[0]]).slice(0, 9)} ETH | {removeDecimals(cbtBal)} CBT
+                <div>Your Account - <a href={`${etherscanStr}/address/${accounts[0]}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{accounts[0].slice(0, 10) + '...' + accounts[0].slice(-4)}</a></div> Your Balances - {removeDecimals(accountBalances[accounts[0]]).slice(0, 9)} ETH | {removeDecimals(cbtBal)} CBT
               </Typography>
               <br />
               <br />
