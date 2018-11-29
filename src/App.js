@@ -271,7 +271,7 @@ class App extends Component {
   }
 
   getSellAmt(amt) {
-    const validated = this.validateInput(this.state.sellAmt)
+    const validated = this.validateInput(amt)
     const amount = utils.toBN(validated.value).mul(utils.toBN(10**18)).div(utils.toBN(10**validated.decimals));
     return amount;
   }
@@ -379,6 +379,37 @@ class App extends Component {
     });
   }
 
+  chartClick = () => {
+    // nothing here
+  }
+  // chartClick = async (coord) => {
+  //   const curPos = parseFloat(coord).toFixed(4);
+  //   const curTotalSupply = parseFloat(removeDecimals(await this.state.billboard.methods.totalSupply().call())).toFixed(4);
+  //   if (curPos > curTotalSupply) {
+  //     // it's a buy request
+  //     const amount = this.getBuyAmt((curPos - curTotalSupply).toFixed(4).toString());
+  //     const stackId =
+  //       this.state.billboard.methods.mint.cacheSend(
+  //         amount.toString(),
+  //         {
+  //           from: this.state.addr,
+  //           value: await this.state.billboard.methods.priceToMint(amount.toString()).call()
+  //         });
+  //     this.setState({ stackId });
+  //     this.waitForMined();
+  //   } else if ( curPos < curTotalSupply) {
+  //     // it's a sell request
+  //     const amount = this.getSellAmt((curTotalSupply - curPos).toFixed(4).toString());
+  //     const stackId = this.state.billboard.methods.burn.cacheSend(
+  //       amount.toString(),
+  //       {
+  //         from: this.state.addr,
+  //       });
+  //     this.setState({ stackId });
+  //     this.waitForMined();
+  //   } else { /* do nothing */ }
+  // }
+
   render() {
     const { accounts, accountBalances, contracts: { Convergent_Billboard: billboard } } = this.props.drizzleState;
 
@@ -436,6 +467,7 @@ class App extends Component {
           <h1>Convergent Billboard</h1>
         {/* </Tooltip> */}
           <Chart
+            chartClick={this.chartClick.bind(this)}
             curveData={curveData}
             multihash={multihash}
             height="100%"
